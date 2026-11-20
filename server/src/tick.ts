@@ -21,15 +21,16 @@ function alert(emit: Emit, a: Omit<RecallAlert, 'at'>) {
 }
 
 /** Step 8: pay (Stripe TEST) → merchant order → receipt with the safety check → K-trail action. */
-async function buy(rec: Recorder, emit: Emit, o: { missionId: string; item: CatalogItem; price: number; listPrice: number; safety?: SafetyCheck; auto: boolean; why: string }): Promise<Receipt | undefined> {
-  const done = rec.start('act', `Paying ${money(o.price)} for ${o.item.title}`, { tool: 'stripe.pay (TEST)' });
-  const pay = await sponsors.pay(o.price, { sku: o.item.sku, run: rec.run.id, agent: 'SafeCart' });
+async function buy(rec: Recorder, emit: Emit, o: { missionId: string; item: CatalogItem; price: number; listPrice: number; safety?: SafetyCheck; auto: boolean; why: string; capUsd: number }): Promise<Receipt | undefined> {
+  const done = rec.start('act', `Paying ${money(o.price)} for ${o.item.title}`, { tool: 'stripe SPT (TEST)' });
+  const pay = await sponsors.pay(o.price, o.capUsd, { sku: o.item.sku, run: rec.run.id, agent: 'SafeCart' });
   const payRef = pay.ok ? (pay as any).paymentIntentId as string : nextId('pay-SIM');
   const order = await placeOrder(o.item.sku, payRef);
-  done(pay.ok ? `Paid ${money(o.price)} (Stripe TEST ${payRef}) · order ${order.orderRef}` : `Payment SIMULATED (${(pay as any).why}) · order ${order.orderRef}`, {
+  done(pay.ok ? `Paid ${money(o.price)} · Stripe TEST ${payRef} · token capped at ${money(o.capUsd)}` : `Payment SIMULATED (${(pay as any).why}) · order ${order.orderRef}`, {
     status: pay.ok ? 'ok' : 'warn', latencyMs: (pay as any).latencyMs,
-    detail: `${o.why}${order.simulated ? ' · merchant offline: order simulated' : ''}`,
+    detail: `${o.why} · order ${order.orderRef}${order.simulated ? ' (merchant offline: order simulated)' : ''}${pay.ok ? ` · Shared Payment Token ${(pay as any).sptId}: Stripe refuses any charge over ${money(o.capUsd)}` : ''}`,
   });
+  if (pay.ok) rec.claim({ text: `Spending is capped at ${money(o.capUsd)} by the payment rail, not just by the agent`, trust: 'trusted', verdict: 'verified', loadBearing: true, stepId: rec.run.steps.at(-1)!.id, sources: [{ label: `Stripe Shared Payment Token ${(pay as any).sptId} (usage_limits.max_amount)` }] });
   const receipt: Receipt = {
     reference: payRef, missionId: o.missionId, candidateId: o.item.sku, title: o.item.title, amount: o.price, currency: 'USD',
     saved: Math.max(0, Math.round((o.listPrice - o.price) * 100) / 100), at: new Date().toISOString(), auto: o.auto, safety: o.safety,
@@ -115,7 +116,7 @@ async function sweepOwned(emit: Emit, p: Policy, spent: () => number) {
       const d = decide(p, price, repl.safety.check, spent());
       rec.run.decision = { chosen: repl.item.title, rationale: `Replaces recalled ${o.title}. ${d.rule}.`, alternatives: [{ name: o.title, whyNot: `recalled: CPSC ${recallId}` }] };
       if (d.buy) {
-        const r = await buy(rec, emit, { missionId: o.id, item: repl.item, price, listPrice, safety: repl.safety.check, auto: true, why: `replacement for recalled ${o.title}` });
+        const r = await buy(rec, emit, { missionId: o.id, item: repl.item, price, listPrice, safety: repl.safety.check, auto: true, why: `replacement for recalled ${o.title}`, capUsd: p.autoBuyLimit });
         alert(emit, { ...a, action: 'replacement_bought', replacementTitle: repl.item.title, claimRef: claim.claimRef });
         rec.finish(r ? 'done' : 'failed');
       } else {
@@ -166,7 +167,7 @@ async function watchWish(emit: Emit, p: Policy, w: WishItem, spent: () => number
   rec.run.decision = { chosen: chosen.title, rationale: `${chosen === item ? 'Wishlist item on sale' : `Safe second choice for a recalled wishlist item`}. ${d.rule}.`, alternatives };
   rec.step('decide', d.buy ? `Decision: buy ${chosen.title}` : `Decision: ask Maya (${d.rule})`, { status: d.buy ? 'ok' : 'warn', tool: 'policy (deterministic)', detail: d.rule });
   if (d.buy) {
-    await buy(rec, emit, { missionId: w.id, item: chosen, price, listPrice, safety, auto: true, why: d.rule });
+    await buy(rec, emit, { missionId: w.id, item: chosen, price, listPrice, safety, auto: true, why: d.rule, capUsd: p.autoBuyLimit });
     emit({ type: 'mission', missionId: w.id, status: 'done', note: `bought ${chosen.title} for ${money(price)}` });
     rec.finish('done');
   } else {
@@ -208,7 +209,7 @@ export async function act(candidateId: string, emit: Emit) {
     rec.finish('blocked');
     return { ok: false, message: 'Daily budget would be exceeded', step: lastStep(rec, 'decide', `Over daily budget ${money(p.dailyBudget)}`, 'blocked') };
   }
-  const r = await buy(rec, emit, { missionId: pend?.missionId ?? item.sku, item, price, listPrice, safety, auto: false, why: 'approved by Maya' });
+  const r = await buy(rec, emit, { missionId: pend?.missionId ?? item.sku, item, price, listPrice, safety, auto: false, why: 'approved by Maya', capUsd: price });
   state.approvals.delete(candidateId);
   rec.finish('done');
   return { ok: true, reference: r?.reference, message: `Bought ${item.title} for ${money(price)}`, step: toAudit(rec) };

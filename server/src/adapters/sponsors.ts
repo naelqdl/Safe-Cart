@@ -25,5 +25,11 @@ export const sponsors = {
   sieExtract: (text: string, labels: string[]) => wrap('SIE_API_KEY', () => sie.extract(text, labels)),
   sieRerank: (q: string, docs: string[]) => wrap('SIE_API_KEY', () => sie.rerank(q, docs)),
   sieWarm: async () => (has('SIE_API_KEY') ? sie.warm() : { all: 'no SIE_API_KEY' }),
-  pay: (amountUsd: number, meta: Record<string, string>) => wrap('STRIPE_SECRET_KEY', () => stripe.pay(null, amountUsd, meta)),
+  /** Mandate-capped payment: mint a Stripe Shared Payment Token capped at capUsd (Stripe itself refuses
+   *  anything over it), then pay with it. Returns the SPT id + cap so the trail can show who enforced the limit. */
+  pay: (amountUsd: number, capUsd: number, meta: Record<string, string>) => wrap('STRIPE_SECRET_KEY', async () => {
+    const spt = await stripe.mintSpt(capUsd, new Date(Date.now() + 15 * 60_000));
+    const pi = await stripe.pay(spt.sptId, amountUsd, meta);
+    return { ...pi, sptId: spt.sptId, capUsd, latencyMs: spt.latencyMs + pi.latencyMs };
+  }),
 };
