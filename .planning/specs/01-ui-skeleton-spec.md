@@ -186,7 +186,7 @@ Generic scenario parameterised by the query: plan → search (source "Mock catal
 The check asserts: step upsert replaces by id; candidate upsert; decision set; error → status error; done → status done; events appended in order.
 
 ### API routes — `web/src/app/api/agent/route.ts` (~50 lines), `web/src/app/api/action/route.ts` (~35 lines)
-Per the HTTP contract. `export const dynamic = "force-dynamic"`. Node runtime (default; no edge).
+Per the HTTP contract. No `dynamic` export (Next 16 scaffold enables `cacheComponents`, which rejects it; POST handlers are uncached). Node runtime (default; no edge).
 
 ### Hook — `web/src/hooks/use-agent-run.ts` (~110 lines)
 `"use client"`, per Data and Control Flow steps 2, 4, 5 and 7.
@@ -241,6 +241,7 @@ README sections: Problem (TBD placeholder), Run locally, Customize in 5 minutes 
 | 7 | Hook | Partial-line buffering and missing-terminal-event handling | Critique: chunk boundaries can split NDJSON lines |
 | 8 | Acceptance | Config-driven name grep check added | SKEL-02 originally had no machine check |
 | 9 | Mock | Action failure trigger changed from candidateId "fail" to query containing "decline" | candidateId is never "fail" in a UI run, so the failure path was unreachable |
+| 11 | Deliverables › API routes | Removed `export const dynamic` | Plan 01 found the Next 16.4.6 scaffold sets `cacheComponents: true` |
 | 10 | Acceptance | Repeatable \`web/scripts/smoke.sh\` + \`npm run smoke\` | Same checks re-run after the real backend is plugged in |
 
 ### Assumptions accepted
