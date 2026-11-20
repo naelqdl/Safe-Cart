@@ -1,5 +1,5 @@
-import { AgentWorkspace } from "@/components/agent-workspace";
+import { Dashboard } from "@/components/dashboard";
 
 export default function Page() {
-  return <AgentWorkspace />;
+  return <Dashboard />;
 }

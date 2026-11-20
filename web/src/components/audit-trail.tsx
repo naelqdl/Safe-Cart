@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import {
   CircleCheck,
   Download,
@@ -17,8 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { ActionState, AuditStep, RunState, StepKind, StepStatus } from "@/lib/agent/types";
+import type { AgentEvent, AuditStep, MissionState, Receipt, StepKind, StepStatus } from "@/lib/agent/types";
 
 const kindIcon: Record<StepKind, LucideIcon> = {
   plan: ListChecks,
@@ -36,15 +36,10 @@ const statusBadge: Record<StepStatus, { label: string; variant: "secondary" | "o
   fail: { label: "Failed", variant: "destructive" },
 };
 
-function exportAudit(state: RunState, action: ActionState) {
-  const payload = {
-    query: state.query,
-    startedAt: state.startedAt,
-    exportedAt: new Date().toISOString(),
-    events: state.events,
-    action,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+function exportAudit(payload: { missions: MissionState[]; receipts: Receipt[]; events: AgentEvent[] }) {
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), ...payload }, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -53,23 +48,33 @@ function exportAudit(state: RunState, action: ActionState) {
   URL.revokeObjectURL(url);
 }
 
-export function AuditTrail({ state, action }: { state: RunState; action: ActionState }) {
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "nearest" });
-  }, [state.steps.length]);
+export function AuditTrail({
+  steps,
+  events,
+  receipts,
+  missions,
+  ticking,
+  error,
+}: {
+  steps: AuditStep[];
+  events: AgentEvent[];
+  receipts: Receipt[];
+  missions: MissionState[];
+  ticking: boolean;
+  error?: string;
+}) {
+  const missionTitle = new Map(missions.map((m) => [m.id, m.title]));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Audit trail</CardTitle>
+        <CardTitle>Activity & audit trail</CardTitle>
         <CardAction>
           <Button
             variant="outline"
             size="sm"
-            disabled={state.events.length === 0}
-            onClick={() => exportAudit(state, action)}
+            disabled={events.length === 0}
+            onClick={() => exportAudit({ missions, receipts, events })}
           >
             <Download />
             Export JSON
@@ -77,37 +82,32 @@ export function AuditTrail({ state, action }: { state: RunState; action: ActionS
         </CardAction>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-96 lg:h-[calc(100vh-12rem)]">
+        <ScrollArea className="h-96 lg:h-[36rem]">
           <div className="flex flex-col gap-4 pr-3">
-            {state.steps.length === 0 && state.status === "idle" && (
-              <p className="text-sm text-muted-foreground">
-                Every step the agent takes, and the source it used, is logged here.
-              </p>
-            )}
-
-            {/* always mounted so screen readers announce the first step */}
-            <ol aria-live="polite" className={cn("flex flex-col gap-5", state.steps.length > 0 && "ml-3 border-l pl-5")}>
-              {state.steps.map((step) => (
-                <StepItem key={step.id} step={step} />
-              ))}
-            </ol>
-
-            {state.status === "running" && (
+            {ticking && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" aria-hidden />
-                Agent is working…
+                Checking missions…
               </p>
             )}
-            {state.status === "error" && (
+            {error && (
               <Alert variant="destructive">
-                <AlertTitle>Run stopped</AlertTitle>
-                <AlertDescription>{state.error ?? "The agent stopped unexpectedly."}</AlertDescription>
+                <AlertTitle>Last check failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            {state.status === "done" && (
-              <p className="text-sm text-muted-foreground">{state.steps.length} steps logged</p>
+            {steps.length === 0 && !ticking && (
+              <p className="text-sm text-muted-foreground">
+                Turn on Autopilot or press Check now. Every check, decision and purchase is logged here.
+              </p>
             )}
-            <div ref={endRef} />
+
+            {/* always mounted so screen readers announce new steps; newest first */}
+            <ol aria-live="polite" className={cn("flex flex-col gap-5", steps.length > 0 && "ml-3 border-l pl-5")}>
+              {[...steps].reverse().map((step) => (
+                <StepItem key={step.id} step={step} mission={step.missionId ? missionTitle.get(step.missionId) : undefined} />
+              ))}
+            </ol>
           </div>
         </ScrollArea>
       </CardContent>
@@ -115,7 +115,7 @@ export function AuditTrail({ state, action }: { state: RunState; action: ActionS
   );
 }
 
-function StepItem({ step }: { step: AuditStep }) {
+function StepItem({ step, mission }: { step: AuditStep; mission?: string }) {
   const Icon = kindIcon[step.kind];
   const badge = statusBadge[step.status];
   return (
@@ -130,9 +130,12 @@ function StepItem({ step }: { step: AuditStep }) {
           {badge.label}
         </Badge>
       </div>
-      <time dateTime={step.at} className="text-xs text-muted-foreground tabular-nums">
-        {new Date(step.at).toLocaleTimeString()}
-      </time>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <time dateTime={step.at} className="tabular-nums">
+          {formatTime(step.at)}
+        </time>
+        {mission && <span className="rounded-md bg-muted px-1.5 py-0.5">{mission}</span>}
+      </div>
       {step.detail && <p className="text-sm text-muted-foreground">{step.detail}</p>}
       {step.sources && step.sources.length > 0 && (
         <ul className="flex flex-wrap gap-1.5 pt-1" aria-label="Sources">
