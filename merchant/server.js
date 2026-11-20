@@ -192,7 +192,7 @@ const server = http.createServer(async (req, res) => {
     // {claimRef: "CLM-…", status: "filed"}
     if (method === 'POST' && pathname === '/api/claims') {
       const body = await parseJsonBody(req);
-      const { ownedItemId, orderRef, recallId, kind } = body;
+      const { ownedItemId, orderRef, recallId, kind, message } = body;
       const claimRef = `CLM-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
       const claimRecord = {
         claimRef,
@@ -202,8 +202,18 @@ const server = http.createServer(async (req, res) => {
         kind: kind || 'refund',
         status: 'filed',
         at: new Date().toISOString(),
+        message: message || null,
+        reply: null,
       };
       claims.unshift(claimRecord);
+      // shortcut: the simulated store auto-approves after 10 s; a real store replies by email or its support portal.
+      setTimeout(() => {
+        claimRecord.status = 'refund_approved';
+        claimRecord.reply = {
+          at: new Date().toISOString(),
+          text: `We received refund request ${claimRef}${orderRef ? ` for order ${orderRef}` : ''} under CPSC recall ${recallId || '(none given)'}. Your refund is approved and goes back to the original payment method within 5-7 business days. Please stop using the product; a prepaid return label is on its way. (Demo Baby Store support, simulated)`,
+        };
+      }, 10000);
       return sendJson(res, 200, { claimRef, status: 'filed' });
     }
 

@@ -17,7 +17,7 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 function recordWrite(rec: Recorder, kind: 'decide' | 'act', what: string, w: Written) {
   rec.step(kind, w.fallback ? `${what} (LLM unavailable: ${w.fallback}; template used)` : what, {
     tool: 'anthropic.messages', model: w.fallback ? undefined : w.model, latencyMs: w.latencyMs, costUsd: w.costUsd || undefined, tokens: w.tokens || undefined,
-    status: w.fallback ? 'warn' : 'ok', detail: w.text.slice(0, 300),
+    status: w.fallback ? 'warn' : 'ok', detail: w.text.slice(0, 1200), // full claim letter reaches the web's Refund requests panel
   });
 }
 

@@ -1,6 +1,6 @@
 # SafeCart: submission draft
 
-Form: tokensand.com/personalagenthack/submit. Fill the TODOs before submitting. Sponsor lines marked "(planned)" must be confirmed or deleted against what is merged on the day.
+Form: tokensand.com/personalagenthack/submit. Fill the TODOs before submitting. Sponsor clients are on main; confirm on the demo laptop (GET :8000/health) which ones ran live, not on fallback.
 
 ## Project name
 
@@ -16,19 +16,13 @@ SafeCart is a personal shopping agent with an audit trail. It remembers a shoppe
 
 ## Every sponsor tool and how we used it
 
-- SingleStore: catalog, price history, wishlist, owned items, recalls table and the step ledger; full-text search for safe alternatives. (planned: client in progress)
-- Senso: knowledge base of recall notices and store policy; a fact-check "the <brand> <model> has no active recall" gates every buy and is cited in the trail. (planned: client in progress)
-- Superlinked SIE: guard on untrusted listing text, extraction of brand, model, price and UPC, rerank of alternatives by preferences. (planned: client in progress)
-- Statsig: dynamic config `purchase_policy` and gate `recall_guard`, flipped live to switch between SafeCart and the naive agent. (planned: client in progress)
-- Amplitude: browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen). Client is in the repo and is a no-op without an API key. Funnel chart: TODO confirm it was built.
-- Cognee: preference memory from past orders. (planned, P1, may not ship)
-- Airbyte: owned items from a seeded demo inbox. (planned, P1, may not ship)
-- Firedrill: naive vs SafeCart simulation. (planned, P1; no results yet. TODO: add pass rates only if the run is done)
-- Stripe (not a sponsor): TEST-mode PaymentIntent as the purchase action. (planned: client in progress)
-
+- SingleStore: catalog, price history, wishlist, owned items, recalls table and the step ledger; full-text search for safe alternatives.- Senso: knowledge base of recall notices and store policy; a fact-check "the <brand> <model> has no active recall" gates every buy and is cited in the trail.- Superlinked SIE: guard on untrusted listing text, extraction of brand, model, price and UPC, rerank of alternatives by preferences.- Statsig: dynamic config `purchase_policy` and gate `recall_guard`, flipped live to switch between SafeCart and the naive agent.- Amplitude: browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen). Client is in the repo and is a no-op without an API key. Funnel chart: TODO confirm it was built.
+- Firedrill: naive vs SafeCart scenarios scaffolded in `evals/`; not run (drills need macOS/Linux). No results.
+- Stripe (not a sponsor): TEST-mode PaymentIntent as the purchase action.
+- Claude (not a sponsor): writes each decision rationale and the refund-claim letter; never decides. Model, latency and cost show in the trail.
 ## Links
 
-- Repo: https://github.com/naelqdl/AWSBuilderLoft
+- Repo: https://github.com/naelqdl/Safe-Cart
 - Video (3 min max): TODO
 - Live demo URL: none (runs locally; not deployed)
 
