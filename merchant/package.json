@@ -1,0 +1,12 @@
+{
+  "name": "merchant-sandbox",
+  "version": "0.1.0",
+  "description": "Adversarial merchant sandbox for Personal Agents Hackathon (T06 / K-merchant)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "ag (Antigravity)",
+  "license": "MIT"
+}
