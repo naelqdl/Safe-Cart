@@ -79,7 +79,7 @@ export async function seedSenso(o: { dataDir?: string; dryRun?: boolean } = {}) 
   const notes: string[] = [];
 
   const recallDir = join(data, 'recalls');
-  const recalls = existsSync(recallDir) ? readdirSync(recallDir).filter((f) => f.endsWith('.json')).map((f) => parseRecall(join(recallDir, f))) : [];
+  const recalls = existsSync(recallDir) ? readdirSync(recallDir).filter((f) => f.endsWith('.json') && !f.endsWith('.raw.json')).map((f) => parseRecall(join(recallDir, f))) : [];
   if (!recalls.length) notes.push(`no recalls in ${recallDir} (ch S-J1)`);
   for (const r of recalls) {
     const f = recallAsKbFile(r);

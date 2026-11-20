@@ -18,7 +18,7 @@ const pair = (flag: string) => {
 };
 
 const recallDir = join(REPO_DATA_DIR, 'recalls');
-const recalls = existsSync(recallDir) ? readdirSync(recallDir).filter((f) => f.endsWith('.json')).map((f) => parseRecall(join(recallDir, f))) : [];
+const recalls = existsSync(recallDir) ? readdirSync(recallDir).filter((f) => f.endsWith('.json') && !f.endsWith('.raw.json')).map((f) => parseRecall(join(recallDir, f))) : [];
 const recalledModels = new Set(recalls.flatMap((r) => r.models.map((m) => m.toLowerCase())));
 
 let recalled = pair('--recalled');

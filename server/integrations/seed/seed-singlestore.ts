@@ -41,7 +41,7 @@ export function loadSeedData(dir = REPO_DATA_DIR): SeedData {
   const wishlist = existsSync(f('wishlist.json')) ? arrayOf(readData(f('wishlist.json')), 'wishlist') : [];
   const owned = existsSync(f('owned.json')) ? arrayOf(readData(f('owned.json')), 'owned') : [];
   const rdir = f('recalls');
-  const recalls = existsSync(rdir) ? readdirSync(rdir).filter((x) => x.endsWith('.json')).map((x) => parseRecall(join(rdir, x))) : [];
+  const recalls = existsSync(rdir) ? readdirSync(rdir).filter((x) => x.endsWith('.json') && !x.endsWith('.raw.json')).map((x) => parseRecall(join(rdir, x))) : [];
   if (products.length) return { userId, products, wishlist, owned, recalls, placeholder: false };
   return {
     userId, wishlist: [], owned: [], recalls, placeholder: true,
@@ -77,8 +77,8 @@ export async function seedSingleStore(o: { dataDir?: string; dryRun?: boolean } 
   await insertMany('price_obs', ['sku', 'price', 'observed_at'], d.products.map((p) => [s(p.sku, 64), num(p.price), new Date().toISOString().slice(0, 23).replace('T', ' ')]));
   await insertMany('wishlist', ['id', 'user_id', 'sku', 'target_price', 'priority', 'added_at'],
     d.wishlist.map((w, i) => [s(w.id ?? `w${i + 1}`, 40), s(w.userId ?? d.userId, 40), s(w.sku, 64), num(w.targetPrice ?? w.target_price), num(w.priority, i + 1), dt(w.addedAt) ?? dt(new Date())]));
-  await insertMany('owned_items', ['id', 'user_id', 'title', 'brand', 'model', 'upc', 'purchased_at', 'merchant', 'order_ref', 'source'],
-    d.owned.map((o, i) => [s(o.id ?? `o${i + 1}`, 40), s(o.userId ?? d.userId, 40), s(o.title), s(o.brand, 80), s(o.model, 120), s(o.upc, 20), dt(o.purchasedAt ?? o.purchased_at), s(o.merchant, 80), s(o.orderRef ?? o.order_ref, 80), s(o.source ?? 'seed', 40)]));
+  await insertMany('owned_items', ['id', 'user_id', 'sku', 'category', 'title', 'brand', 'model', 'upc', 'purchased_at', 'merchant', 'order_ref', 'source'],
+    d.owned.map((o, i) => [s(o.id ?? `o${i + 1}`, 40), s(o.userId ?? d.userId, 40), s(o.sku, 64), s(o.category, 40), s(o.title), s(o.brand, 80), s(o.model, 120), s(o.upc, 20), dt(o.purchasedAt ?? o.purchased_at), s(o.merchant, 80), s(o.orderRef ?? o.order_ref, 80), s(o.source ?? 'seed', 40)]));
   await insertMany('recalls', ['recall_id', 'title', 'brands', 'models', 'upcs', 'hazard', 'remedy', 'url', 'published_at', 'senso_content_id', 'active_in_demo'],
     d.recalls.map((r) => [r.recallId, r.title, JSON.stringify(r.brands), JSON.stringify(r.models), JSON.stringify(r.upcs), r.hazard, r.remedy, r.url, dt(r.publishedAt), null, false]));
 

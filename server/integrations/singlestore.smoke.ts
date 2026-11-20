@@ -18,29 +18,29 @@ await smoke('singlestore', [
     if (missing.length) throw new Error(`missing tables: ${missing.join(', ')} (run seed/seed-singlestore.ts)`);
     return `6/6 tables`;
   }],
-  ['getWishlist', async () => { need(); const r = await s2.getWishlist(); return `${r.items.length} items · ${r.latencyMs}ms`; }],
-  ['getOwned', async () => { need(); const r = await s2.getOwned(); return `${r.items.length} items · ${r.latencyMs}ms`; }],
-  ['getRecalls', async () => { need(); const r = await s2.getRecalls(); firstRecall = r.recalls[0]; return `${r.recalls.length} recalls · ${r.latencyMs}ms`; }],
+  ['getWishlist', async () => { need(); const r = await s2.getWishlist(); return `${r.length} items · ${r.latencyMs}ms`; }],
+  ['getOwned', async () => { need(); const r = await s2.getOwned(); return `${r.length} items · ${r.latencyMs}ms`; }],
+  ['getRecalls', async () => { need(); const r = await s2.getRecalls(); firstRecall = r[0]; return `${r.length} recalls · ${r.latencyMs}ms`; }],
   ['matchOwnedToRecall', async () => {
     need();
     if (!firstRecall) return 'no recalls seeded yet (data/recalls)';
     const r = await s2.matchOwnedToRecall(firstRecall.recallId);
-    return `${firstRecall.recallId} → ${r.items.map((i) => `${i.title} (${i.matchedBy})`).join(', ') || 'no owned match'} · ${r.latencyMs}ms`;
+    return `${firstRecall.recallId} → ${r.map((i) => `${i.title} (${i.matchedBy})`).join(', ') || 'no owned match'} · ${r.latencyMs}ms`;
   }],
   ['recallsForProduct', async () => {
     need();
     if (!firstRecall) return 'no recalls seeded yet';
     const r = await s2.recallsForProduct({ model: firstRecall.models[0] });
-    if (!r.recalls.length) throw new Error(`model ${firstRecall.models[0]} did not match its own recall`);
-    return `${firstRecall.models[0]} → ${r.recalls.map((x) => x.recallId).join(', ')} · ${r.latencyMs}ms`;
+    if (!r.length) throw new Error(`model ${firstRecall.models[0]} did not match its own recall`);
+    return `${firstRecall.models[0]} → ${r.map((x) => x.recallId).join(', ')} · ${r.latencyMs}ms`;
   }],
   ['findAlternatives', async () => {
     need();
     const [p] = await s2.query("SELECT * FROM products ORDER BY price DESC LIMIT 1");
     if (!p) throw new Error('no products seeded');
     firstProduct = (await s2.getProduct(p.sku)).product!;
-    const r = await s2.findAlternatives({ category: firstProduct.category, maxPrice: firstProduct.price, excludeModels: [firstProduct.model], text: firstProduct.title });
-    return `${r.items.length} alternatives (${r.mode}) for ${firstProduct.sku} · ${r.latencyMs}ms`;
+    const r = await s2.findAlternatives({ category: firstProduct.category, maxPrice: firstProduct.price, excludeModels: [firstProduct.model], avoidBrands: [], excludeSku: firstProduct.sku, text: firstProduct.title });
+    return `${r.length} alternatives (${r.mode}) for ${firstProduct.sku} · ${r.latencyMs}ms`;
   }],
   ['recordPrice+setPrice', async () => {
     need();
@@ -51,9 +51,9 @@ await smoke('singlestore', [
   }],
   ['logLedger+getLedger', async () => {
     need();
-    await s2.logLedger([{ runId: run, kind: 'smoke', title: 'smoke row 1', sponsor: 'singlestore', detail: { ok: true } }, { runId: run, kind: 'smoke', title: 'smoke row 2' }]);
+    await s2.logLedger([{ runId: run, kind: 'smoke', title: 'smoke row 1', sponsor: 'singlestore', detail: { ok: true } }, { runId: run, stepId: 's2', kind: 'verify', title: 'smoke row 2 (cc LedgerRow shape)', status: 'ok', tool: 'singlestore.smoke', latencyMs: 1, detail: 'text detail', at: new Date().toISOString() }]);
     const r = await s2.getLedger({ runId: run });
-    if (r.rows.length !== 2) throw new Error(`expected 2 rows, got ${r.rows.length}`);
+    if (r.length !== 2) throw new Error(`expected 2 rows, got ${r.length}`);
     await s2.query('DELETE FROM ledger WHERE run_id = ?', [run]);
     return `2 rows round-trip · ${r.latencyMs}ms`;
   }],
@@ -61,7 +61,7 @@ await smoke('singlestore', [
     need();
     if (!firstRecall) return 'no recalls seeded yet';
     await s2.activateRecall(firstRecall.recallId);
-    const on = (await s2.getRecalls({ activeOnly: true })).recalls.some((r) => r.recallId === firstRecall!.recallId);
+    const on = (await s2.getRecalls({ activeOnly: true })).some((r) => r.recallId === firstRecall!.recallId);
     await s2.query('UPDATE recalls SET active_in_demo = FALSE WHERE recall_id = ?', [firstRecall.recallId]);
     if (!on) throw new Error('not active after activateRecall');
     return firstRecall.recallId;
