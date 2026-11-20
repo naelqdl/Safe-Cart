@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { close, query, resetDemo } from '../singlestore.ts';
+import { close, ensureDatabase, query, resetDemo } from '../singlestore.ts';
 import { REPO_DATA_DIR } from './kb.ts';
 import { parseRecall } from './seed-senso.ts';
 
@@ -69,6 +69,8 @@ export async function seedSingleStore(o: { dataDir?: string; dryRun?: boolean } 
   const d = loadSeedData(o.dataDir);
   const counts = { products: d.products.length, wishlist: d.wishlist.length, owned: d.owned.length, recalls: d.recalls.length };
   if (o.dryRun) return { ...counts, placeholder: d.placeholder, fulltext: 'dry-run' };
+  const db = await ensureDatabase();
+  if (db.created) console.log(`NOTE created database ${db.database}`);
   await applySchema();
   for (const t of ['products', 'price_obs', 'wishlist', 'owned_items', 'recalls']) await query(`TRUNCATE TABLE ${t}`);
 
