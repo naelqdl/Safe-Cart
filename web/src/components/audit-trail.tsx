@@ -29,11 +29,11 @@ const kindIcon: Record<StepKind, LucideIcon> = {
   act: ShoppingCart,
 };
 
-const statusBadge: Record<StepStatus, { label: string; variant: "secondary" | "outline" | "destructive" }> = {
-  running: { label: "Running", variant: "secondary" },
-  ok: { label: "OK", variant: "outline" },
-  warn: { label: "Check", variant: "secondary" },
-  fail: { label: "Failed", variant: "destructive" },
+const statusBadge: Record<StepStatus, { label: string; variant: "secondary" | "success" | "warning" | "destructive"; node: string }> = {
+  running: { label: "Running", variant: "secondary", node: "text-primary border-primary/30" },
+  ok: { label: "OK", variant: "success", node: "text-success border-success/30" },
+  warn: { label: "Check", variant: "warning", node: "text-warning border-warning/40" },
+  fail: { label: "Failed", variant: "destructive", node: "text-destructive border-destructive/40" },
 };
 
 function exportAudit(payload: { missions: MissionState[]; receipts: Receipt[]; events: AgentEvent[] }) {
@@ -120,7 +120,7 @@ function StepItem({ step, mission }: { step: AuditStep; mission?: string }) {
   const badge = statusBadge[step.status];
   return (
     <li className="relative flex flex-col gap-1">
-      <span className="absolute top-0 -left-[33px] flex size-6 items-center justify-center rounded-full border bg-background">
+      <span className={cn("absolute top-0 -left-[33px] flex size-6 items-center justify-center rounded-full border bg-card", badge.node)}>
         <Icon className="size-3.5" aria-hidden />
       </span>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

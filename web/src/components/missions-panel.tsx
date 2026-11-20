@@ -10,10 +10,10 @@ import { appConfig } from "@/config/app.config";
 import { formatPrice, formatTime } from "@/lib/format";
 import type { MissionState, MissionStatus } from "@/lib/agent/types";
 
-const statusBadge: Record<MissionStatus, { label: string; variant: "secondary" | "default" | "outline" }> = {
+const statusBadge: Record<MissionStatus, { label: string; variant: "secondary" | "warning" | "success" }> = {
   watching: { label: "Watching", variant: "secondary" },
-  waiting: { label: "Needs you", variant: "default" },
-  done: { label: "Done", variant: "outline" },
+  waiting: { label: "Needs you", variant: "warning" },
+  done: { label: "Done", variant: "success" },
 };
 
 export function MissionsPanel({ missions, onAdd }: { missions: MissionState[]; onAdd(title: string, maxPrice: number): void }) {

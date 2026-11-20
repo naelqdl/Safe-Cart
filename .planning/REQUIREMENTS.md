@@ -10,3 +10,13 @@
 | SKEL-06 | Every panel has explicit empty, running, error and done states; the action has confirm, pending, success-receipt and failure-with-retry states. | 1 |
 | SKEL-07 | Audit trail can be exported as a JSON file containing the query, timestamps, every event and the action result. | 1 |
 | SKEL-08 | Root README explains how to run the app and a "Customize in 5 minutes" table mapping each change to the one file to edit, plus the backend event contract. | 1 |
+
+| SC-01 | Seed data for Maya with 2 real CPSC recalls (one wishlist, one owned), catalog with alternatives and an injection listing. | 2 |
+| SC-02 | Merchant sandbox on :3100 with sale, order and refund-claim endpoints. | 2 |
+| SC-03 | Sponsor clients with smoke tests: SingleStore, Statsig, Senso recall gate, SIE warm-up (Stripe/SIE/Senso reused). | 2 |
+| SC-04 | Agent loop on :8000: owned-items recall sweep, wishlist sale watch, safety check before every buy, alternatives, Stripe TEST buy, K-trail + ledger. | 2 |
+| SC-05 | Web: SafeCart types, mock, memory panel, recall alerts, receipt safety line, demo bar; works on mock. | 2 |
+| SC-06 | Amplitude events and funnel for agent outcomes. | 2 |
+| SC-07 | Golden path passes twice on :8000 and on the mock. | 2 |
+| SC-08 | README, ≤3-min video and submission naming every sponsor tool and its job. | 2 |
+| SC-09 | P1 sponsors: Cognee memory, Airbyte inbox, Firedrill evals, Persona step-up, Arcee routing (each only if the P0 path is green). | 2 |

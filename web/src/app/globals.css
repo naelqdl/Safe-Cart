@@ -27,6 +27,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -48,25 +50,29 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* SafeCart: cool slate neutrals, safety blue brand; green = safe, amber = needs a look, red = recalled/blocked.
+   Every text pair below is >= 4.5:1 on card and background. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.975 0.005 255);
+  --foreground: oklch(0.21 0.034 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.21 0.034 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.21 0.034 265);
+  --primary: oklch(0.52 0.2 263);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.012 255);
+  --secondary-foreground: oklch(0.28 0.04 262);
+  --muted: oklch(0.96 0.008 255);
+  --muted-foreground: oklch(0.48 0.035 257);
+  --accent: oklch(0.95 0.025 262);
+  --accent-foreground: oklch(0.36 0.15 264);
+  --destructive: oklch(0.55 0.22 27);
+  --success: oklch(0.5 0.12 160);
+  --warning: oklch(0.54 0.15 52);
+  --border: oklch(0.915 0.012 255);
+  --input: oklch(0.89 0.014 255);
+  --ring: oklch(0.52 0.2 263);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -99,6 +105,8 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.72 0.15 160);
+  --warning: oklch(0.78 0.15 70);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -126,5 +134,14 @@
   }
   html {
     @apply font-sans;
+  }
+  h1, h2, h3, [data-slot="card-title"] {
+    text-wrap: balance;
+  }
+  p, li, [data-slot="alert-description"] {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 22%, transparent);
   }
 }

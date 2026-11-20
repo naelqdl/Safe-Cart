@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "descriptor_sha256": "<digest printed by firedrill register>",
+  "roots": [
+    {
+      "alias": "app",
+      "path": "C:/Users/Nael/Documents/Hackathons/AWS",
+      "identity_sha256": "<root identity hash>"
+    }
+  ],
+  "services": [
+    {
+      "alias": "agent",
+      "root_alias": "app",
+      "mode": "attach",
+      "command": null,
+      "cwd": ".",
+      "env_passthrough": [
+        "EVAL_LABEL",
+        "MERCHANT_URL",
+        "RECALLED_SKU"
+      ],
+      "env_static": {},
+      "readiness": {
+        "kind": "http",
+        "url": "http://localhost:8000/health"
+      },
+      "readiness_timeout_ms": 30000,
+      "stop_timeout_ms": 5000,
+      "per_drill": false,
+      "port_env": null
+    }
+  ],
+  "driver": {
+    "profile": "http.v1",
+    "service_alias": "agent",
+    "path": "/chat",
+    "method": "POST",
+    "stream": "none",
+    "session_header": null,
+    "request_template": "message-text",
+    "response_pointer": "/reply"
+  },
+  "state_hooks": [
+    {
+      "domain": "merchant",
+      "root_alias": "app",
+      "script": "evals/oracle.mjs",
+      "sha256": "<sha256 of evals/oracle.mjs>",
+      "runtime": "node",
+      "timeout_ms": 20000
+    }
+  ],
+  "max_parallel_drills": 1
+}

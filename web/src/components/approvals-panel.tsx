@@ -20,11 +20,11 @@ export function ApprovalsPanel({
   onDecline(id: string): void;
 }) {
   return (
-    <Card className={approvals.length > 0 ? "ring-primary/40" : undefined}>
+    <Card className={approvals.length > 0 ? "ring-2 ring-warning/50" : undefined}>
       <CardHeader>
         <CardTitle>Approvals</CardTitle>
         <CardAction>
-          <Badge variant={approvals.length > 0 ? "default" : "secondary"}>{approvals.length} waiting</Badge>
+          <Badge variant={approvals.length > 0 ? "warning" : "secondary"}>{approvals.length} waiting</Badge>
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -43,7 +43,7 @@ export function ApprovalsPanel({
               <li key={a.id} className="flex flex-col gap-2 rounded-lg border p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-medium">{a.candidate.title}</p>
+                    <p className="font-medium text-pretty">{a.candidate.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {a.candidate.vendor}
                       {mission && <> · for {mission.title}</>}
