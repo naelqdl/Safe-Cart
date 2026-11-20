@@ -66,6 +66,7 @@ export function ChatPanel({
                     </Button>
                   </div>
                   {pending && st?.status === "error" && <p className="text-xs text-destructive">{st.message}</p>}
+                  {pending && st?.status === "verify" && <p className="text-xs text-warning">{st.message} Finish the Persona check in Approvals.</p>}
                 </div>
               )}
               <time dateTime={m.at} className="text-xs text-muted-foreground tabular-nums">{formatTime(m.at)}</time>

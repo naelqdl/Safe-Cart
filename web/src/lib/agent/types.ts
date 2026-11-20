@@ -69,7 +69,9 @@ export type AgentEvent =
 
 /** POST /api/action body: execute a purchase the user approved. */
 export interface ActionRequest { candidateId: string; query: string }
-export interface ActionResult { ok: boolean; reference?: string; message: string; step: AuditStep; safety?: SafetyCheck }
+/** verify: the purchase is over the auto-buy limit and waits for a Persona identity check (url = live Persona link). */
+export interface PersonaVerify { inquiryId: string; url?: string; simulated: boolean }
+export interface ActionResult { ok: boolean; reference?: string; message: string; step: AuditStep; safety?: SafetyCheck; verify?: PersonaVerify }
 
 // --- Chat: the user talks to the agent; the agent also posts on its own ---
 export interface ChatMessage {
@@ -94,7 +96,7 @@ export interface ChatReply { reply: string; actions: ChatAction[] }
 
 // --- Client dashboard state (not sent over the wire) ---
 export interface MissionState extends Mission { status: MissionStatus; lastChecked?: string; note?: string }
-export interface ApprovalUiState { status: "idle" | "pending" | "error"; message?: string }
+export interface ApprovalUiState { status: "idle" | "pending" | "error" | "verify"; message?: string; verify?: PersonaVerify }
 export interface DashboardState {
   missions: MissionState[];
   steps: AuditStep[];

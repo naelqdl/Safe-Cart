@@ -238,6 +238,7 @@ const demo = (path, body, before) => async () => { if (before) before(); try { a
 $('dSale').onclick = demo('/demo/sale', { sku: 'STR-BESREY-01', pct: 30 });
 $('dRecall').onclick = demo('/demo/recall', { recallId: '10328' }, () => { S.recallT = performance.now(); });
 $('dInject').onclick = demo('/demo/inject', {});
+$('dBig').onclick = demo('/demo/bigbuy', {});
 $('dReset').onclick = async () => {
   setAuto(false);
   try { await api('/demo/reset', {}); await api('/demo/guard', {}); } catch (e) { overlay('bad', 'Reset failed', e.message, [], 9); }
@@ -260,13 +261,21 @@ async function approve(id, ok) {
     try {
       const r = await (await api('/action', { candidateId: a.candidate.id, query: a.reason })).json();
       if (r.step) onStep(r.step);
-      if (r.ok) onReceipt({ reference: r.reference, missionId: a.missionId, candidateId: a.candidate.id, title: a.candidate.title, amount: a.candidate.price, currency: 'USD', saved: 0, at: new Date().toISOString(), auto: false });
+      // Persona step-up: over the auto-buy limit the server wants an identity check first; keep the approval open
+      if (r.verify) { a.verify = r.verify; a.note = r.message; SC.emit('approvals'); return; }
+      if (r.ok) onReceipt({ reference: r.reference, missionId: a.missionId, candidateId: a.candidate.id, title: a.candidate.title, amount: a.candidate.price, currency: 'USD', saved: 0, at: new Date().toISOString(), auto: false, safety: r.safety });
+      else overlay('bad', 'Not bought', r.message, [], 9);
     } catch (err) { overlay('bad', 'Approval failed', err.message, [], 9); }
   }
   S.approvals.delete(id); SC.emit('approvals'); await loadProfile();
 }
-Object.assign(window.SC, { api, check, openRun, setPage, setAuto, approve, money, esc, payLabel, loadProfile });
-const KEYS = { 1: 'dSale', 2: 'dRecall', 3: 'dInject', 0: 'dReset' };
+// Demo stand-in for Persona's hosted flow: pass or fail the SIMULATED inquiry, then retry the purchase.
+async function verify(id, outcome) {
+  try { await api('/demo/verify', { outcome }); } catch (e) { overlay('bad', 'Persona check failed', e.message, [], 9); return; }
+  await approve(id, true);
+}
+Object.assign(window.SC, { api, check, openRun, setPage, setAuto, approve, verify, money, esc, payLabel, loadProfile });
+const KEYS = { 1: 'dSale', 2: 'dRecall', 3: 'dInject', 4: 'dBig', 0: 'dReset' };
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('input')) return;
   const k = e.key.toLowerCase();

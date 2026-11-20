@@ -6,6 +6,7 @@ import { store } from './adapters/store.ts';
 import { sponsors } from './adapters/sponsors.ts';
 import { checkSafety, type SafetyResult } from './safety.ts';
 import { inspectListing } from './listing.ts';
+import { personaCheck, personaForget } from './adapters/persona.ts';
 import { nextId, state } from './state.ts';
 import { Recorder } from './trail.ts';
 import { writeClaimLetter, writeRationale, type Written } from './llm.ts';
@@ -201,7 +202,8 @@ async function watchWish(emit: Emit, p: Policy, w: WishItem, spent: () => number
 const words = (t: string) => new Set(t.toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 4 && !['baby', 'video', 'travel', 'with'].includes(w)));
 /** The dashboard sends its own mission ids; map each wishlist item to the best-matching mission by title words. */
 function missionIdFor(w: WishItem, missions: TickRequest['missions'] | undefined): string {
-  if (!missions?.length) return w.id;
+  // once the dashboard mirrors the wishlist (mission id = wishlist id), use ids; a new item it hasn't loaded yet keeps its own id
+  if (!missions?.length || missions.some((m) => seed.wishlist.some((x) => x.id === m.id))) return w.id;
   const it = bySku(w.sku);
   const mine = words(`${w.title ?? ''} ${it?.title ?? ''} ${it?.category ?? ''}`);
   let best = { id: w.id, n: 0 };
@@ -241,10 +243,30 @@ export async function act(candidateId: string, emit: Emit) {
     rec.finish('blocked');
     return { ok: false, message: 'Daily budget would be exceeded', step: lastStep(rec, 'decide', `Over daily budget ${money(p.dailyBudget)}`, 'blocked') };
   }
+  // Persona step-up: approving a purchase over the auto-buy limit also needs Maya to prove it is her. Never pay unverified.
+  if (price > p.autoBuyLimit) {
+    let v;
+    try { v = await personaCheck(item.sku, `${rec.run.id}:${item.sku}`); }
+    catch (e) { rec.finish('blocked'); return { ok: false, message: `Persona unreachable, not bought (${(e as Error).message})`, step: lastStep(rec, 'verify', 'Persona step-up failed: not bought', 'blocked') }; }
+    const sim = v.simulated ? ' (SIMULATED: no PERSONA_API_KEY)' : '';
+    if (v.status !== 'approved') {
+      const declined = v.status === 'declined';
+      if (declined) personaForget(item.sku);
+      rec.finish('blocked');
+      return {
+        ok: false,
+        message: declined ? 'Persona verification failed, so SafeCart did not buy it.' : `Verify it's you first: ${money(price)} is over your ${money(p.autoBuyLimit)} auto-buy limit.`,
+        verify: declined ? undefined : { inquiryId: v.id, url: v.url, simulated: v.simulated },
+        step: lastStep(rec, 'verify', `Persona step-up ${declined ? 'declined, not bought' : 'required'}: inquiry ${v.id}${sim}`, declined ? 'blocked' : 'warn'),
+      };
+    }
+    rec.step('verify', `Persona verified Maya: inquiry ${v.id}${sim}`, { tool: 'persona', detail: `${money(price)} is over the auto-buy limit ${money(p.autoBuyLimit)}; identity confirmed before paying` });
+    personaForget(item.sku);
+  }
   const r = await buy(rec, emit, { missionId: pend?.missionId ?? item.sku, item, price, listPrice, safety, auto: false, why: 'approved by Maya', capUsd: price });
   state.approvals.delete(candidateId);
   rec.finish('done');
-  return { ok: true, reference: r?.reference, message: `Bought ${item.title} for ${money(price)}`, step: toAudit(rec) };
+  return { ok: true, reference: r?.reference, message: `Bought ${item.title} for ${money(price)}`, step: toAudit(rec), safety };
 }
 
 function lastStep(rec: Recorder, kind: any, title: string, status: any) { rec.step(kind, title, { status }); return toAudit(rec); }
