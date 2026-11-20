@@ -108,6 +108,7 @@ async function sweepOwned(emit: Emit, p: Policy, spent: () => number) {
       const claimDone = rec.start('act', `Filing refund claim for ${o.title}`, { tool: 'merchant /api/claims' });
       const claim = await fileClaim(o.id, recallId, o.orderRef);
       claimDone(`Refund claim ${claim.claimRef} filed${claim.simulated ? ' (SIMULATED: store offline)' : ''}`, { detail: `remedy: ${recall.remedy.slice(0, 140)}` });
+      state.safety.set(o.id, { status: 'recalled', sources: [{ label: `CPSC recall ${recallId}`, url: recall.url }], checkedAt: new Date().toISOString(), recallId });
       const a = alert(emit, { id: `alert_${recallId}_${o.id}`, recallId, recallTitle: recall.title, hazard: recall.hazard, remedy: recall.remedy, url: recall.url, itemTitle: o.title, itemKind: 'owned', action: 'refund_claim_filed', claimRef: claim.claimRef });
 
       const repl = await findSafeAlternative(rec, { sku: o.sku, category: o.category ?? bySku(o.sku ?? '')?.category ?? '', model: o.model }, p.autoBuyLimit);
@@ -150,6 +151,7 @@ async function watchWish(emit: Emit, p: Policy, w: WishItem, spent: () => number
   let safety: SafetyCheck | undefined;
   const alternatives: { name: string; whyNot: string }[] = [];
   if (!p.recallGuard) {
+    safety = { status: 'unknown', sources: [], checkedAt: new Date().toISOString() }; // unchecked: NAIVE
     rec.step('policy', 'NAIVE mode: safety check skipped (Statsig recall_guard = off)', { status: 'warn', tool: 'statsig.recall_guard', detail: 'demo contrast: this is what a normal shopping agent does' });
   } else {
     const s = await checkSafety({ key: item.sku, brand: item.brand, model: item.model, upc: item.upc, title: item.title, category: item.category }, rec);
@@ -177,6 +179,17 @@ async function watchWish(emit: Emit, p: Policy, w: WishItem, spent: () => number
   }
 }
 
+const words = (t: string) => new Set(t.toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 4 && !['baby', 'video', 'travel', 'with'].includes(w)));
+/** The dashboard sends its own mission ids; map each wishlist item to the best-matching mission by title words. */
+function missionIdFor(w: WishItem, missions: TickRequest['missions'] | undefined): string {
+  if (!missions?.length) return w.id;
+  const it = bySku(w.sku);
+  const mine = words(`${w.title ?? ''} ${it?.title ?? ''} ${it?.category ?? ''}`);
+  let best = { id: w.id, n: 0 };
+  for (const m of missions) { const n = [...words(m.title)].filter((x) => mine.has(x)).length; if (n > best.n) best = { id: m.id, n }; }
+  return best.id;
+}
+
 export async function tick(req: Partial<TickRequest>, emit: Emit) {
   const p = await getPolicy();
   const pol = new Recorder(emit, undefined, 'Policy check', p.autoBuyLimit, []);
@@ -186,7 +199,7 @@ export async function tick(req: Partial<TickRequest>, emit: Emit) {
   const spent = () => Math.max(state.spentToday, req.spentToday ?? 0);
   await sweepOwned(emit, p, spent);
   const wish = [...seed.wishlist].sort((a, b) => (a.priority ?? 9) - (b.priority ?? 9));
-  for (const w of wish) await watchWish(emit, p, w, spent);
+  for (const w of wish) await watchWish(emit, p, { ...w, id: missionIdFor(w, req.missions) }, spent);
 }
 
 /** POST /action: Maya approved a purchase. Runs the safety check again first (unless naive mode). */
