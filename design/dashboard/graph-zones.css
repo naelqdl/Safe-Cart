@@ -1,0 +1,36 @@
+/* Graph zones (2D): owned by graph.js. Calm by default: flat zones, plain-text labels, links only on hover/select/search.
+   Bodies sit behind the WebGL canvas, headers above it (clickable). Vars fall back so this works with either stylesheet. */
+.gzones, .gzheads { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.gz { position: absolute; border-radius: 8px !important; background: var(--s1, rgba(255, 255, 255, .025)) !important;
+  box-shadow: none !important; border: 1px solid var(--line, rgba(255, 255, 255, .07)) !important; transition: opacity .25s; }
+.gz.slim { background: transparent !important; border-style: dashed !important; }
+.gz.off { opacity: .5; }
+.gz-empty { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-30%); text-align: center; font: 400 12px var(--text, system-ui); color: var(--faint, #4b5563); }
+.gzh { position: absolute; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 8px; border-radius: 6px;
+  font: 500 12.5px var(--text, system-ui) !important; letter-spacing: 0; color: var(--ink-2, #c2c8d0) !important; white-space: nowrap; overflow: hidden;
+  pointer-events: auto; cursor: pointer; background: none !important; box-shadow: none !important; transition: background .15s; }
+.gzh .ic { color: var(--c); flex: none; opacity: .9; }
+.gzh .gzdot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.gzh span { overflow: hidden; text-overflow: ellipsis; }
+.gzh b { flex: none; font: 400 12px var(--text, system-ui) !important; color: var(--muted, #6b7280) !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+.gzh:hover { background: rgba(255, 255, 255, .05) !important; }
+.gzh.slim { color: var(--muted, #6b7280) !important; }
+.gzh.off span { text-decoration: line-through; }
+/* 2D labels: plain text, no pills; list-style right of the node (r) or centred below (b); width capped to the slot */
+.view.graph.dim2 .glabels span { padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+  font: 400 12.5px/1.3 var(--text, system-ui) !important; color: var(--ink-2, #c2c8d0) !important; text-shadow: 0 0 3px rgba(10, 12, 16, .95), 0 0 1px rgba(10, 12, 16, .95) !important;
+  overflow: hidden; text-overflow: ellipsis; transition: opacity .2s; }
+.view.graph.dim2 .glabels span.k-recall { color: #f87171 !important; }
+.view.graph.dim2 .glabels span.k-src { color: var(--muted, #8a929d) !important; font-size: 12px !important; }
+.view.graph.dim2 .glabels span.k-user { color: var(--ink, #f3f4f6) !important; font-weight: 600 !important; }
+.view.graph.dim2 .glabels span.sel { color: var(--ink, #f3f4f6) !important; font-weight: 600 !important; }
+.glabels span.r { transform: translate(0, -50%); }
+.glabels span.b { transform: translate(-50%, 0); }
+/* 2D: no title card; just a compact search field top-left (zones are the legend) */
+.view.graph.dim2 .legend { width: auto !important; padding: 0 !important; background: none !important; box-shadow: none !important; border: 0 !important; backdrop-filter: none !important; display: block !important; }
+.view.graph.dim2 .legend h3, .view.graph.dim2 .legend p, .view.graph.dim2 .legend .keys, .view.graph.dim2 .gstats { display: none !important; }
+.view.graph.dim2 .legend .gsearch { width: 300px; height: 36px; background: var(--s2, rgba(255, 255, 255, .04)); border: 1px solid var(--line, rgba(255, 255, 255, .08)); box-shadow: none; border-radius: 8px; }
+/* 2D / 3D segmented toggle in the toolbar */
+.gtools .gdim { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: transparent; border: 1px solid var(--line, rgba(255, 255, 255, .08)); }
+.gtools .gdim button { height: 30px; padding: 0 10px; }
+.gtools [hidden] { display: none !important; }
