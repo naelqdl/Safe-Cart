@@ -116,7 +116,8 @@
   let lastCheck = 0;
   // SafeShop: what Maya did in the store and what the agent did about it (GET /shop/activity on the agent)
   S.shop = { items: [], connected: false };
-  const API = (new URLSearchParams(location.search).get('api') || 'http://localhost:8000').replace(/\/$/, '');
+  const API = (new URLSearchParams(location.search).get('api') || window.SAFECART_CONFIG?.api || 'http://localhost:8000').replace(/\/$/, '');
+  document.querySelectorAll('a[href="http://localhost:3300/"]').forEach((x) => { x.href = window.SAFECART_CONFIG?.shop || x.href; });
   const VERB = { add_to_cart: 'Added to cart', wishlist_add: 'Saved to wishlist', purchase: 'Bought' };
   let shopSig = '';
   async function pollShop() {

@@ -400,8 +400,9 @@ function startStream() {
 // ---------- SafeCart link (cc): the SafeCart agent watches this shop's events (cart, wishlist, purchases), runs a
 // recall check and acts (takes recalled items out of the cart, files refund claims). Show its verdict here and link
 // to its dashboard. ?agent= and ?dashboard= override the defaults.
-const SC_API = new URLSearchParams(location.search).get('agent') || 'http://localhost:8000';
-const SC_DASH = new URLSearchParams(location.search).get('dashboard') || 'http://localhost:5175/';
+const SC_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const SC_API = new URLSearchParams(location.search).get('agent') || (SC_LOCAL ? 'http://localhost:8000' : 'https://safecart-demo-agent.onrender.com');
+const SC_DASH = new URLSearchParams(location.search).get('dashboard') || (SC_LOCAL ? 'http://localhost:5175/' : 'https://safecart-dashboard.vercel.app/');
 document.getElementById('scLink')?.setAttribute('href', SC_DASH);
 async function scVerdict(productId, since) {
   for (let i = 0; i < 20; i++) {

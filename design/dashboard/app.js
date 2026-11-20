@@ -1,6 +1,6 @@
 // SafeCart Autopilot prototype: talks to the live agent backend (server/ on :8000).
 // ?api=http://host:8000 overrides the backend URL. Keys: 1 sale · 2 recall · 3 injection · 0 reset · A autopilot · C check now.
-const API = new URLSearchParams(location.search).get('api') || 'http://localhost:8000';
+const API = new URLSearchParams(location.search).get('api') || window.SAFECART_CONFIG?.api || 'http://localhost:8000';
 const $ = (id) => document.getElementById(id);
 const money = (n) => `$${Number(n ?? 0).toFixed(2)}`;
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
