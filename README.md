@@ -15,7 +15,8 @@ SafeCart is a personal shopping agent with an audit trail, built for the Persona
 | `server/integrations/` sponsor clients (SingleStore, Senso, SIE, Statsig, Stripe) | On main. Each is used when its key is set; without it the trail labels the fallback |
 | Claude (decision rationale + refund-claim letter, never decides) | On main (`server/src/llm.ts`); template text without `ANTHROPIC_API_KEY` |
 | Firedrill evals | Scaffold in `evals/`, not run. No results |
-| Cognee, Airbyte, Persona, Arcee | Not built |
+| Persona step-up before purchases over the auto-buy limit | On main (`server/src/adapters/persona.ts`); live with `PERSONA_API_KEY` + `PERSONA_TEMPLATE_ID`, otherwise a labelled SIMULATED check you pass or fail from the approval card |
+| Cognee, Airbyte | Not built |
 
 ## Problem
 
@@ -90,6 +91,7 @@ The agent loop runs these steps in order. Each is an audit-trail step and a Sing
 | Statsig | Dynamic config `purchase_policy` and gate `recall_guard`, flipped live in the demo | `server/integrations/statsig.ts` |
 | Amplitude | Browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen) | `web/src/lib/analytics.ts` (in the repo; no-op without a key) |
 | Firedrill | Naive vs SafeCart simulation | `evals/` (scaffold, not run; no results) |
+| Persona | Identity check before any approved purchase over the auto-buy limit; the trail keeps only the inquiry id | `server/src/adapters/persona.ts` |
 | Stripe (not a sponsor) | Test-mode payment as the real action | `server/integrations/stripe.ts` |
 | Claude (not a sponsor) | Writes the decision rationale and the refund-claim letter; buy/skip stays deterministic | `server/src/llm.ts` |
 
@@ -139,7 +141,7 @@ NEXT_PUBLIC_AMPLITUDE_API_KEY=            # optional; empty = analytics off
 
 Restart the app after changing it (rebuild first if a `NEXT_PUBLIC_*` value changed). Backend env vars live in a gitignored repo-root `.env` (names only here):
 
-`S2_URL`, `SENSO_API_KEY`, `SIE_API_KEY`, `STATSIG_SERVER_KEY`, `STRIPE_SECRET_KEY` (`sk_test_` only), `ANTHROPIC_API_KEY`, `MERCHANT_URL`. P1/P2: `LLM_API_KEY`, `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, `PERSONA_API_KEY`.
+`S2_URL`, `SENSO_API_KEY`, `SIE_API_KEY`, `STATSIG_SERVER_KEY`, `STRIPE_SECRET_KEY` (`sk_test_` only), `ANTHROPIC_API_KEY`, `MERCHANT_URL`, `PERSONA_API_KEY` + `PERSONA_TEMPLATE_ID` (sandbox). P1: `LLM_API_KEY`, `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`.
 
 Start the backend first:
 
@@ -150,7 +152,7 @@ cd merchant && npm start                                                     # :
 
 Ports: app :3210 (desktop) or web :3000 (dev), server :8000, merchant :3100.
 
-**Demo controls** (demo bar in the **Logs** tab; results show in the **Shop** tab; `showDemoControls` in `web/src/config/app.config.ts`): "Put stroller on sale -30%", "Publish recall", "Reset demo". It also shows the current policy (auto-buy limit, autonomy, recall guard and its source). Sku and recall id come from `appConfig.demo` and must match the backend seed.
+**Demo controls** (demo bar in the **Logs** tab; results show in the **Shop** tab; `showDemoControls` in `web/src/config/app.config.ts`): "Put stroller on sale -30%", "Publish recall", "Plant injected listing", "Big purchase ($199, needs Persona)", "Reset demo". It also shows the current policy (auto-buy limit, autonomy, recall guard and its source). Sku and recall id come from `appConfig.demo` and must match the backend seed.
 
 ### Troubleshooting
 

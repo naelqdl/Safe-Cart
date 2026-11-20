@@ -81,9 +81,13 @@
   function approvals() {
     const list = [...S.approvals.values()];
     $('ctApprovals').hidden = !list.length; $('ctApprovals').textContent = list.length;
-    $('pgApprovals').innerHTML = head('Approvals', 'Purchases above Maya’s auto-buy limit wait here. Approving re-runs the safety check before paying.') +
+    $('pgApprovals').innerHTML = head('Approvals', 'Purchases above Maya’s auto-buy limit wait here. Approving re-runs the safety check and asks for a Persona identity check before paying.') +
       (list.length ? list.map((a) => `<div class="pg-card"><div class="chips"><span class="badge warn">Waiting</span><span class="meta">${ago(a.at)}</span></div>
         <h3>${esc(a.candidate.title)} · ${money(a.candidate.price)}</h3><p>${esc(a.reason)}</p>
+        ${a.verify ? `<div class="pg-card"><div class="chips"><span class="badge steel">Persona</span><span class="meta">Identity check · inquiry ${esc(a.verify.inquiryId)}${a.verify.simulated ? ' · SIMULATED (no Persona key)' : ''}</span></div>
+          <p>${esc(a.note ?? '')}</p>
+          ${a.verify.url ? `<p><a href="${esc(a.verify.url)}" target="_blank" rel="noreferrer">Verify with Persona</a>, then press Approve again.</p>` : ''}
+          ${a.verify.simulated ? `<div class="chips"><button class="btn" data-pv-pass="${esc(a.id)}">Pass check as Maya</button><button class="btn ghost" data-pv-fail="${esc(a.id)}">Fail check</button></div>` : ''}</div>` : ''}
         <div class="chips"><button class="btn" data-ap="${esc(a.id)}">Approve</button><button class="btn ghost" data-de="${esc(a.id)}">Decline</button></div></div>`).join('')
         : empty('Nothing waiting. Everything so far fit the policy, so the agent acted on its own.'));
   }
@@ -123,6 +127,8 @@
   document.addEventListener('click', (e) => {
     const ap = e.target.closest('[data-ap]'); if (ap) SC.approve(ap.dataset.ap, true);
     const de = e.target.closest('[data-de]'); if (de) SC.approve(de.dataset.de, false);
+    const pp = e.target.closest('[data-pv-pass]'); if (pp) SC.verify(pp.dataset.pvPass, 'approved');
+    const pf = e.target.closest('[data-pv-fail]'); if (pf) SC.verify(pf.dataset.pvFail, 'declined');
     const rn = e.target.closest('.view.page [data-run]'); if (rn) SC.openRun(+rn.dataset.run);
     const rf = e.target.closest('[data-rf]'); if (rf) openRefund(rf.dataset.rf);
   });

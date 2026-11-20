@@ -169,7 +169,7 @@ export function useAutopilot(): AutopilotApi {
           const result = (await res.json()) as ActionResult;
           apply({ type: "step", step: { ...result.step, missionId } });
           if (!result.ok) {
-            setApprovalState(approvalId, { status: "error", message: result.message });
+            setApprovalState(approvalId, result.verify ? { status: "verify", message: result.message, verify: result.verify } : { status: "error", message: result.message });
             return;
           }
           const listPrice = Number(candidate.attributes["List price"]?.replace(/[^0-9.]/g, ""));
