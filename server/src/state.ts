@@ -18,6 +18,7 @@ function fresh() {
     runs: new Map<string, Run>(),
     ledger: [] as LedgerRow[],
     spentToday: 0,
+    claims: [] as { claimRef: string; ownedItemId: string; orderRef?: string; recallId: string; letter: string; letterModel: string; simulated: boolean; at: string }[],
     injections: new Map<string, string>(), // sku → text planted live via /demo/inject (merchant admin stand-in)
     guardOverride: undefined as boolean | undefined, // local /demo/guard when Statsig is not wired
     seq: 0,

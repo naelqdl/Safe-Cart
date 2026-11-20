@@ -132,6 +132,15 @@ const server = createServer(async (req, res) => {
       state.guardOverride = b.on === undefined ? undefined : !!b.on;
       return json(res, 200, { ok: true, recallGuard: state.guardOverride ?? 'statsig/default' });
     }
+    if (req.method === 'GET' && url.pathname === '/refunds') { // store claim log ⋈ our claim letters (store has no CORS for the browser)
+      const titles = new Map(seed.owned.map((o) => [o.id, o.title]));
+      let storeClaims: any[] | null = null;
+      try { const r = await fetch(`${(process.env.MERCHANT_URL ?? 'http://localhost:3100').replace(/\/$/, '')}/api/admin/log`, { signal: AbortSignal.timeout(3000) }); if (r.ok) storeClaims = (await r.json()).claims ?? []; } catch { /* store offline */ }
+      const mine = new Map(state.claims.map((c) => [c.claimRef, c]));
+      const base = storeClaims ?? state.claims;
+      const claims = base.map((c: any) => ({ ...c, ...(mine.get(c.claimRef) ?? {}), storeStatus: storeClaims ? c.status : 'store offline (simulated)', storeReply: c.reply ?? c.storeReply ?? null, itemTitle: titles.get(c.ownedItemId) ?? c.ownedItemId }));
+      return json(res, 200, { claims, source: storeClaims ? 'merchant /api/admin/log' : 'agent (store offline)' });
+    }
     if (req.method === 'GET' && url.pathname === '/ledger') return json(res, 200, state.ledger.slice(-200));
     json(res, 404, { error: `no route ${req.method} ${url.pathname}` });
   } catch (e) {

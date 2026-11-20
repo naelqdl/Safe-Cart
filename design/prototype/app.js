@@ -7,7 +7,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const S = {
   focus: 0, focusAt: 0, profile: null, tab: 'wishlist', runs: [], runIx: -1, receipts: [], recalls: new Map(),
   busy: false, auto: false, timer: null, ticker: null, nextAt: 0, tick: 0, spent: 0, t0: Date.now(), recallT: 0, highlight: null,
+  approvals: new Map(), steps: [], events: [], page: 'autopilot',
 };
+const listeners = [];
+window.SC = { S, on: (f) => listeners.push(f), emit: (type, data) => listeners.forEach((f) => { try { f(type, data); } catch (err) { console.error(err); } }) };
 $('apiLabel').textContent = API;
 
 async function api(path, body) {
@@ -19,7 +22,7 @@ async function api(path, body) {
 // ---------- panel ----------
 async function loadProfile() {
   try {
-    S.profile = await (await api('/profile')).json(); renderPanel();
+    S.profile = await (await api('/profile')).json(); renderPanel(); SC.emit('profile', S.profile);
     if (!$('feed').children.length) {
       feedLine('idle', 'ok', `Watching ${S.profile.wishlist.length} wishlist items · ${S.profile.owned.length} owned items`);
       feedLine('idle2', 'ok', 'CPSC recall feed connected · 0 new recalls');
@@ -105,6 +108,7 @@ function target(kind, tag, name, meta) {
 }
 
 function onStep(s) {
+  const si = S.steps.findIndex((x) => x.id === s.id); if (si >= 0) S.steps[si] = s; else S.steps.push(s);
   feedLine(s.id, s.status === 'fail' ? 'bad' : s.status, s.title, s.at);
   const k = STAGE_OF[s.kind]; if (k) setPipeline(k, /RECALLED|Blocked/.test(s.title));
   const m = /On sale: (.+?) \$([\d.]+) \((\d+)% off/.exec(s.title);
@@ -165,12 +169,15 @@ async function check(fresh = true) {
       let nl; while ((nl = buf.indexOf('\n')) >= 0) {
         const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1); if (!line) continue;
         const e = JSON.parse(line);
+        S.events.push(e);
+        if (e.type === 'approval') S.approvals.set(e.approval.id, e.approval);
         if (e.type === 'step') onStep(e.step); else if (e.type === 'recall') onRecall(e.alert);
         else if (e.type === 'receipt') onReceipt(e.receipt); else if (e.type === 'run') onRun(e.run);
         else if (e.type === 'error') overlay('bad', 'Agent error', e.message, [], 9);
+        SC.emit('event', e);
       }
     }
-    setPipeline('all');
+    setPipeline('all'); SC.emit('tickdone');
   } catch (e) { overlay('bad', 'Agent offline', `Can't reach ${API}`, [esc(e.message)], 9); }
   S.busy = false; $('stage').classList.remove('scanning'); setStatus();
   await loadProfile();
@@ -234,11 +241,31 @@ $('dInject').onclick = demo('/demo/inject', {});
 $('dReset').onclick = async () => {
   setAuto(false);
   try { await api('/demo/reset', {}); await api('/demo/guard', {}); } catch (e) { overlay('bad', 'Reset failed', e.message, [], 9); }
-  Object.assign(S, { runs: [], runIx: -1, receipts: [], recalls: new Map(), spent: 0, focus: 0, recallT: 0, highlight: null });
+  Object.assign(S, { runs: [], runIx: -1, receipts: [], recalls: new Map(), spent: 0, focus: 0, recallT: 0, highlight: null, approvals: new Map(), steps: [], events: [] });
+  SC.emit('reset');
   $('feed').innerHTML = ''; $('target').hidden = true; renderDots(); setPipeline(''); setTab('wishlist');
   overlay('', 'Standing by', 'Protecting what Maya buys, and what she owns.', ['Every purchase is checked against U.S. CPSC recalls first', 'Owned items are re-checked when a new recall is published', 'Payments are capped by a Stripe spending token'], 0);
   await loadProfile();
 };
+function setPage(pg) {
+  S.page = pg;
+  document.querySelectorAll('#pages button').forEach((b) => b.classList.toggle('on', b.dataset.page === pg));
+  document.querySelectorAll('.view').forEach((v) => { v.hidden = v.dataset.view !== pg; });
+  SC.emit('page', pg);
+}
+$('pages').onclick = (e) => { const b = e.target.closest('button[data-page]'); if (b) setPage(b.dataset.page); };
+async function approve(id, ok) {
+  const a = S.approvals.get(id); if (!a) return;
+  if (ok) {
+    try {
+      const r = await (await api('/action', { candidateId: a.candidate.id, query: a.reason })).json();
+      if (r.step) onStep(r.step);
+      if (r.ok) onReceipt({ reference: r.reference, missionId: a.missionId, candidateId: a.candidate.id, title: a.candidate.title, amount: a.candidate.price, currency: 'USD', saved: 0, at: new Date().toISOString(), auto: false });
+    } catch (err) { overlay('bad', 'Approval failed', err.message, [], 9); }
+  }
+  S.approvals.delete(id); SC.emit('approvals'); await loadProfile();
+}
+Object.assign(window.SC, { api, check, openRun, setPage, setAuto, approve, money, esc, payLabel, loadProfile });
 const KEYS = { 1: 'dSale', 2: 'dRecall', 3: 'dInject', 0: 'dReset' };
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('input')) return;
@@ -247,12 +274,18 @@ document.addEventListener('keydown', (e) => {
   if (k === 'a') setAuto(!S.auto);
   if (k === 'c') check();
   if (k === 'escape') closeSheet();
+  if (k === 'g') setPage(S.page === 'graph' ? 'autopilot' : 'graph');
 });
 $('chatBtn').onclick = () => $('chat').classList.toggle('open');
+document.querySelectorAll('.chat .quick button').forEach((b) => { b.onclick = () => { $('chatInput').value = b.dataset.q; $('chatForm').requestSubmit(); }; });
 $('chatForm').onsubmit = async (e) => {
   e.preventDefault(); const q = $('chatInput').value.trim(); if (!q) return; $('chatInput').value = '';
   const log = $('chatLog'); log.insertAdjacentHTML('beforeend', `<div class="me">${esc(q)}</div>`);
-  try { const r = await (await api('/chat', { message: q, context: {} })).json(); log.insertAdjacentHTML('beforeend', `<div class="ai">${esc(r.reply)}</div>`); }
+  try {
+    const r = await (await api('/chat', { message: q, context: {} })).json();
+    log.insertAdjacentHTML('beforeend', `<div class="ai">${esc(r.reply)}</div>`);
+    for (const a of r.actions ?? []) { if (a.type === 'check_now') check(); if (a.type === 'set_autopilot') setAuto(!!a.on); }
+  }
   catch (err) { log.insertAdjacentHTML('beforeend', `<div class="ai">Agent offline: ${esc(err.message)}</div>`); }
   log.scrollTop = log.scrollHeight;
 };
