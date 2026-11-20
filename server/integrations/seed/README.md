@@ -1,4 +1,18 @@
-# server/integrations/seed (T14, owner hz)
+# server/integrations/seed (owner hz)
+
+## SafeCart (D2, S-H3): recall notices into Senso
+```bash
+cd server/integrations
+npx tsx seed/seed-senso.ts            # data/recalls/*.json (REAL CPSC only) + data/kb/*.txt → Senso; idempotent
+npx tsx senso-gate.smoke.ts           # recallFactCheck on a recalled + a clean model, both author modes
+```
+- Recall JSON (ch, S-J1): camelCase (`recallId, title, brands[], models[], upcs[], hazard, remedy, url, publishedAt`) or CPSC API PascalCase (`RecallID, Title, Products[].Model, Manufacturers, Hazards, Remedies, URL`); both parse. `recallId`, `title`, `url` are required.
+- Stored text: `CPSC Recall <id>: <title>. Brands … Models … Hazard … Remedy … Source: <url>`.
+- Content ids → `seed/.senso-manifest.json`; `recallContentId(recallId)` reads one. Also written to SingleStore `recalls.senso_content_id` once ch's `singlestore.ts` is merged and `S2_URL` is set (best effort, never fails the seed).
+- For cc: `recallFactCheck(brand, model)` in `../senso-gate.ts` → `{verdict, recalled, passages, quote, runId, author, claim, latencyMs}`. `conflict` = recalled. `unsupported`/`not_verifiable` = no notice in Senso, which is not proof of safety alone: combine with CPSC + SingleStore for `SafetyCheck.status`. Default author `organization` (`ai_assistant` returns not_verifiable for third-party brands); override with `SENSO_GATE_AUTHOR`.
+
+---
+# D1 (superseded): T14 SPD seeding
 Seeds Senso's KB from `data/kb/**` (T13, owner ch) and runs the gate test.
 Design per D1#Red-team #4 + cc25: **every doc version is its own Senso doc** (SPD v1 and v2 both pre-ingested).
 The agent pins one SPD by contentId; switching on stage is instant, no live upload or re-ingest.

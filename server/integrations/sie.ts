@@ -62,6 +62,9 @@ export function classify(text: string, labels: string[]) {
   });
 }
 
+/** SafeCart S-H3.3: cc calls this at server boot (fire and forget). Same as warm(). */
+export const warmAll = () => warm();
+
 /** Pre-warm every model (cold starts can return 503 for minutes). Never throws. */
 export async function warm(): Promise<Record<string, string>> {
   const jobs: [string, () => Promise<unknown>][] = [

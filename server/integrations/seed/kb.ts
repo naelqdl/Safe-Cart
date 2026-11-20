@@ -8,8 +8,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const REPO_KB_DIR = resolve(here, '../../../data/kb');
 export const FIXTURE_KB_DIR = resolve(here, 'fixtures/kb');
 
-/** data/kb if it exists (ch's real docs), else the placeholder fixtures. */
+/** data/kb if it exists (ch's real docs), else the D1 placeholder fixtures (FSA docs: D1 only). */
 export const defaultKbDir = () => (existsSync(REPO_KB_DIR) ? REPO_KB_DIR : FIXTURE_KB_DIR);
+export const REPO_DATA_DIR = resolve(here, '../../../data');
 
 export interface KbFile { doc: string; version: number; title: string; source?: string; body: string; path: string; sha: string }
 
