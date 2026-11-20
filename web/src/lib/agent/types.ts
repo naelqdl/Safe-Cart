@@ -32,8 +32,33 @@ export interface Approval { id: string; missionId: string; candidate: Candidate;
 export interface Receipt {
   reference: string; missionId: string; candidateId: string; title: string;
   amount: number; currency: string; saved: number; at: string; auto: boolean;
+  safety?: SafetyCheck; // SafeCart: the recall check that ran before this purchase
 }
 export type MissionStatus = "watching" | "waiting" | "done";
+
+// --- SafeCart (D2) wire types: owner hz (plans/hz.md#H0a). The server emits exactly these. ---
+/** Result of the recall check on one product. unknown = a source failed; never auto-buy on unknown. */
+export interface SafetyCheck {
+  status: "clear" | "recalled" | "unknown";
+  sources: { label: string; url?: string }[]; // e.g. CPSC API, Senso KB (content id)
+  checkedAt: string;                          // ISO 8601
+  recallId?: string;
+}
+/** A recall that hit a wishlist or owned item, and what the agent did about it. Upsert by id. */
+export interface RecallAlert {
+  id: string; recallId: string; recallTitle: string; hazard: string; remedy: string; url: string;
+  itemTitle: string; itemKind: "owned" | "wishlist";
+  action: "refund_claim_filed" | "purchase_skipped" | "replacement_bought" | "needs_you";
+  claimRef?: string; replacementTitle?: string; at: string;
+}
+/** GET /profile: what the agent remembers about the user. */
+export interface Profile {
+  name: string;
+  preferences: { label: string; source: "user" | "memory" }[]; // memory = from Cognee (P1)
+  wishlist: { id: string; sku: string; title: string; targetPrice: number; price: number; listPrice: number; onSale: boolean; safety?: SafetyCheck }[];
+  owned: { id: string; title: string; model: string; purchasedAt: string; merchant: string; safety?: SafetyCheck }[];
+  policy: { autoBuyLimit: number; minDiscountPct: number; autonomy: "auto" | "ask_first"; recallGuard: boolean; source: "statsig" | "default" };
+}
 
 export type AgentEvent =
   | { type: "step"; step: AuditStep }                 // upsert by step.id
@@ -41,6 +66,7 @@ export type AgentEvent =
   | { type: "approval"; approval: Approval }          // add to the approvals inbox
   | { type: "receipt"; receipt: Receipt }             // the agent executed a purchase
   | { type: "run"; run: Run }                         // K-trail Run; upsert by run.id
+  | { type: "recall"; alert: RecallAlert }            // SafeCart; upsert by alert.id
   | { type: "error"; message: string }
   | { type: "done" };
 
