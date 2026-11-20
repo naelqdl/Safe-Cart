@@ -25,11 +25,11 @@ export function RunsPanel({ runs }: { runs: Run[] }) {
               <li key={r.id} className="first:pt-0 last:pb-0">
                 <button
                   type="button" onClick={() => setOpenId(r.id)}
-                  className="flex w-full flex-col gap-1 rounded-md py-3 text-left outline-none hover:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 first:pt-0"
+                  className="flex w-full flex-col gap-1 rounded-md py-3 text-left outline-none hover:bg-accent/60 focus-visible:ring-[3px] focus-visible:ring-ring/50 first:pt-0"
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium" title={r.mandate.goal}>{r.mandate.goal}</span>
-                    <Badge variant={r.status === "done" ? "secondary" : r.status === "running" ? "outline" : "destructive"}>{r.status}</Badge>
+                    <Badge variant={r.status === "done" ? "success" : r.status === "running" ? "outline" : "destructive"}>{r.status}</Badge>
                   </span>
                   <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground tabular-nums">
                     {/* server and browser time zones can differ (seeded demo runs render on the server) */}

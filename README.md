@@ -46,8 +46,8 @@ Maya Chen, a new parent in Oakland. She is fictional, seeded for the demo.
 
 ```mermaid
 flowchart LR
-  Browser["web :3000 (Next.js dashboard)"] -->|"/api/* proxy"| Server["server :8000 (agent loop)"]
-  Browser -.->|"browser events"| Amp[Amplitude]
+  Browser["Electron app (Next.js dashboard, :3210)"] -->|"/api/* proxy"| Server["server :8000 (agent loop)"]
+  Browser -.->|"client events"| Amp[Amplitude]
   Server --> S2[SingleStore]
   Server --> Senso[Senso]
   Server --> SIE[Superlinked SIE]
@@ -105,7 +105,18 @@ The dashboard footer says the same. The mock agent used when no backend is conne
 
 Requires Node 20.9+ (tested on Node 24).
 
-**Web on the mock (works today):**
+**Desktop app (the way to run and present the demo):**
+
+```bash
+cd web
+npm install
+npm run build
+npm run desktop    # opens the Electron app; its own server on port 3210 (DESKTOP_PORT to change)
+```
+
+The window opens maximized with the full dashboard. Keep it maximized: un-maximizing turns it into a chat-only widget. See [Desktop app](#desktop-app).
+
+**Development (`npm run dev`, development only):**
 
 ```bash
 cd web
@@ -113,7 +124,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Turn on **Autopilot**. The mock buys Maya's wishlist items; the stroller mission takes the recall branch (alert, purchase skipped, alternative bought). **Check now** runs a check immediately.
+Open http://localhost:3000 and use the same steps as the desktop app. Turn on **Autopilot**. The mock buys Maya's wishlist items; the stroller mission takes the recall branch (alert, purchase skipped, alternative bought). **Check now** runs a check immediately.
 
 **With the real backend (once it is merged):** copy `web/.env.example` to `web/.env.local` and set:
 
@@ -122,11 +133,11 @@ AGENT_BACKEND_URL=http://localhost:8000   # unset = built-in mock; no trailing s
 NEXT_PUBLIC_AMPLITUDE_API_KEY=            # optional; empty = analytics off
 ```
 
-Restart the web server after changing it. Backend env vars live in a gitignored repo-root `.env` (names only here):
+Restart the app after changing it (rebuild first if a `NEXT_PUBLIC_*` value changed). Backend env vars live in a gitignored repo-root `.env` (names only here):
 
 `S2_URL`, `SENSO_API_KEY`, `SIE_API_KEY`, `STATSIG_SERVER_KEY`, `STRIPE_SECRET_KEY` (`sk_test_` only), `ANTHROPIC_API_KEY`, `MERCHANT_URL`. P1/P2: `LLM_API_KEY`, `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, `PERSONA_API_KEY`.
 
-Start commands for `server/` and `merchant/` will be added when those branches land. Ports: web :3000, server :8000, merchant :3100.
+Start commands for `server/` and `merchant/` will be added when those branches land. Ports: app :3210 (desktop) or web :3000 (dev), server :8000, merchant :3100.
 
 **Demo controls** (demo bar under the header, `showDemoControls` in `web/src/config/app.config.ts`): "Put stroller on sale -30%", "Publish recall", "Reset demo". It also shows the current policy (auto-buy limit, autonomy, recall guard and its source). Sku and recall id come from `appConfig.demo` and must match the backend seed.
 
@@ -205,7 +216,7 @@ npm run smoke         # HTTP smoke checks; needs a running server (default http:
 - Until the backend branches merge, all data in the dashboard is mock.
 - The store, shopper and inbox are simulated; refund claims go to the simulated store, not a real merchant.
 - Payments are Stripe TEST mode only. No real money moves.
-- Autopilot runs in the browser tab: it checks only while the dashboard is open, and state resets on reload (only the on/off switch is saved).
+- Autopilot runs in the app window: it checks only while the dashboard is open, and state resets on reload (only the on/off switch is saved).
 - The safety check covers CPSC recalls only (plus the Senso knowledge base). Other regulators and recall sources are not covered.
 - No auth. Not deployed.
 

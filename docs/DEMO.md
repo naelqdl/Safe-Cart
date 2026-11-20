@@ -4,12 +4,12 @@ For the 3-minute live demo (plans/nael.md, demo script) and the backup video. Mo
 
 ## 1. Pre-flight (5 min before)
 
-- **Servers.** Mock: `cd web && npm run dev` (web :3000 only). Real backend: also the agent server on :8000 and the merchant on :3100, both up before web starts. Their start commands are not in the README yet.
+- **Servers.** Start the desktop app: `cd web && npm run build && npm run desktop`. It starts its own server on :3210 (`DESKTOP_PORT` to change). Mock needs nothing else. Real backend: also the agent server on :8000 and the merchant on :3100, both up before the app starts. Their start commands are not in the README yet.
 - **web/.env.local** does not exist yet. Create it with `cp web/.env.example web/.env.local`.
   - Mock: leave `AGENT_BACKEND_URL` empty or absent (empty = built-in mock).
-  - Real: `AGENT_BACKEND_URL=http://localhost:8000` (no trailing slash). Restart web after any change.
-- Open http://localhost:3000 and click **Reset demo** (reloads the page, clears receipts and alerts). Check the Autopilot switch is OFF; it is saved in the browser, so check it on every start. Use **Check now** for timing.
-- **Window.** One browser window, 1920x1080 at 100% zoom (or F11). Close other tabs and chat apps, turn on Windows Focus assist, hide the bookmarks bar. Use the browser rather than `npm run desktop` unless you have rehearsed it.
+  - Real: `AGENT_BACKEND_URL=http://localhost:8000` (no trailing slash). Restart the app after any change.
+- In the desktop app, click **Reset demo** (reloads the window, clears receipts and alerts). Check the Autopilot switch is OFF; it is saved locally, so check it on every start. Use **Check now** for timing.
+- **Window.** Display 1920x1080 at 100% scaling. Keep the SafeCart window maximized the whole time: it opens maximized with the full dashboard (demo bar, panels, chat docked right). Un-maximizing turns it into a 420x720 always-on-top chat-only widget with no demo bar or panels; double-click the title bar or maximize it again to get the dashboard back. Close other windows and chat apps, and turn on Windows Focus assist. Links (CPSC notices, RECALLED badges) open in the system browser, which takes focus away from the app.
 - **Dry run:** Publish recall, Put stroller on sale, Recall guard OFF then ON, then Reset demo.
 
 ## 2. Script (mock)
@@ -33,13 +33,13 @@ Each demo button runs a check after it posts, so the effect should appear withou
 
 ## 3. If something breaks on stage
 
-1. **Live backend errors** (red text under the demo bar, or the trail stops): stop web (Ctrl+C), empty `AGENT_BACKEND_URL` in web/.env.local, run `npm run dev` again, reload, click Reset demo. The mock runs the same beats.
+1. **Live backend errors** (red text under the demo bar, or the trail stops): quit the app, empty `AGENT_BACKEND_URL` in web/.env.local, run `npm run desktop` again, click Reset demo. The mock runs the same beats. `AGENT_BACKEND_URL` is read at runtime. Rebuild (`npm run build`) first only if a `NEXT_PUBLIC_*` value changed, because those are baked in at build time.
 2. **Still broken:** play the backup video full screen and narrate over it.
-3. **Wrong state mid-show:** click Reset demo. It reloads the page.
+3. **Wrong state mid-show:** click Reset demo. It reloads the window.
 
 ## 4. Backup video (Windows)
 
-- **Recorder:** Xbox Game Bar (Win+Alt+R starts and stops; Win+G opens the bar) or OBS. Game Bar records the foreground window, so size the browser to 1920x1080 first. For OBS, use Window Capture of the browser, set base and output canvas to 1920x1080 and record to MP4.
+- **Recorder:** Xbox Game Bar (Win+Alt+R starts and stops; Win+G opens the bar) or OBS. Game Bar records the foreground app window, so keep the SafeCart window maximized on a 1920x1080 display first. For OBS, use Window Capture of the SafeCart (Electron) window, set base and output canvas to 1920x1080 and record to MP4.
 - Game Bar saves to `C:\Users\Nael\Videos\Captures`.
 - **Length:** 3 minutes or less. Record one take of section 2 and stop at 3:00. Narrate live or record a voice-over afterwards.
 - **Check** the file is 1080p in its properties before uploading.

@@ -1,6 +1,6 @@
 "use client";
 
-import { SendHorizontal } from "lucide-react";
+import { MessageCircle, SendHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,7 +40,10 @@ export function ChatPanel({
 
   const body = (
     <>
-      <h2 className={cn("px-4 text-sm font-medium", variant === "plain" && "border-b py-3")}>Chat with your agent</h2>
+      <h2 className={cn("flex items-center gap-2 px-4 text-sm font-semibold", variant === "plain" && "border-b py-3")}>
+        <MessageCircle className="size-4 text-primary" aria-hidden />
+        Chat with your agent
+      </h2>
       <div ref={listRef} role="log" aria-live="polite" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-1">
         {messages.map((m) => {
           const user = m.role === "user";
@@ -48,7 +51,7 @@ export function ChatPanel({
           const st = m.approvalId ? approvalStates[m.approvalId] : undefined;
           return (
             <div key={m.id} className={cn("flex max-w-[85%] flex-col gap-1", user ? "self-end items-end" : "self-start items-start")}>
-              <div className={cn("rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words", user ? "bg-primary text-primary-foreground" : "bg-muted")}>
+              <div className={cn("rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words", user ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
                 {m.text}
               </div>
               {m.approvalId && !pending && <p className="text-xs text-muted-foreground">Handled</p>}

@@ -1,28 +1,30 @@
 "use client";
 
+import { ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProfileApi } from "@/hooks/use-profile";
 import { formatPrice } from "@/lib/format";
-import type { SafetyCheck } from "@/lib/agent/types";
+import type { RecallAlert, SafetyCheck } from "@/lib/agent/types";
 
 const cur = "USD";
 
 function SafetyBadge({ safety, url }: { safety?: SafetyCheck; url?: string }) {
   if (!safety) return null;
   if (safety.status === "recalled") {
-    const badge = <Badge variant="destructive">RECALLED</Badge>;
+    const badge = <Badge className="bg-destructive text-white"><ShieldAlert aria-hidden />RECALLED</Badge>;
     return url ? <a href={url} target="_blank" rel="noreferrer" title="Open the recall notice">{badge}</a> : badge;
   }
-  if (safety.status === "unknown") return <Badge variant="outline">Safety unknown</Badge>;
-  return <Badge variant="secondary">Safe</Badge>;
+  if (safety.status === "unknown") return <Badge variant="warning"><ShieldQuestion aria-hidden />Safety unknown</Badge>;
+  return <Badge variant="success"><ShieldCheck aria-hidden />Safe</Badge>;
 }
 
 // Data comes from useProfile() (called once in the dashboard and shared with the demo bar).
-export function MemoryPanel({ api }: { api: ProfileApi }) {
+export function MemoryPanel({ api, recalls }: { api: ProfileApi; recalls: RecallAlert[] }) {
   const { profile, error, reload } = api;
-  const recallUrl = "https://www.cpsc.gov/Recalls";
+  // RECALLED badges link to the notice from the matching recall alert, else the CPSC recalls page.
+  const recallUrl = (s?: SafetyCheck) => recalls.find((a) => a.recallId === s?.recallId)?.url ?? "https://www.cpsc.gov/Recalls";
   return (
     <Card>
       <CardHeader>
@@ -57,7 +59,7 @@ export function MemoryPanel({ api }: { api: ProfileApi }) {
                 {profile.wishlist.map((w) => (
                   <li key={w.id} className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium" title={w.title}>{w.title}</p>
+                      <p className="text-sm font-medium">{w.title}</p>
                       <p className="text-xs text-muted-foreground tabular-nums">
                         {formatPrice(w.price, cur)} · target {formatPrice(w.targetPrice, cur)}
                       </p>
@@ -66,7 +68,7 @@ export function MemoryPanel({ api }: { api: ProfileApi }) {
                       {w.onSale && w.listPrice > w.price && (
                         <Badge>On sale −{Math.round((1 - w.price / w.listPrice) * 100)}%</Badge>
                       )}
-                      <SafetyBadge safety={w.safety} url={recallUrl} />
+                      <SafetyBadge safety={w.safety} url={recallUrl(w.safety)} />
                     </div>
                   </li>
                 ))}
@@ -81,7 +83,7 @@ export function MemoryPanel({ api }: { api: ProfileApi }) {
                       <p className="truncate text-sm font-medium" title={o.title}>{o.title}</p>
                       <p className="text-xs text-muted-foreground">Model {o.model} · {o.merchant}</p>
                     </div>
-                    <SafetyBadge safety={o.safety} url={recallUrl} />
+                    <SafetyBadge safety={o.safety} url={recallUrl(o.safety)} />
                   </li>
                 ))}
               </ul>

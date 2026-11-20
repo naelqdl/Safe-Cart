@@ -222,5 +222,21 @@ export function useAutopilot(): AutopilotApi {
     }));
   }, []);
 
-  return { state, enabled, setEnabled, secondsToNextCheck, runNow, approve, decline, addMission };
+  const syncWishlist = useCallback((items: { id: string; title: string; targetPrice: number }[]) => {
+    if (items.length === 0) return;
+    setState((s) => {
+      const configIds = new Set(appConfig.missions.map((m) => m.id));
+      const byId = new Map(s.missions.map((m) => [m.id, m]));
+      // Wishlist items replace the config seed (status kept by id); missions added by hand stay after them.
+      const manual = s.missions.filter((m) => !configIds.has(m.id) && !items.some((w) => w.id === m.id));
+      const missions = [
+        ...items.map((w) => byId.get(w.id) ?? { id: w.id, title: w.title, maxPrice: w.targetPrice, currency: appConfig.currency, status: "watching" as const }),
+        ...manual,
+      ];
+      const same = missions.length === s.missions.length && missions.every((m, i) => m === s.missions[i]);
+      return same ? s : { ...s, missions };
+    });
+  }, []);
+
+  return { state, enabled, setEnabled, secondsToNextCheck, runNow, approve, decline, addMission, syncWishlist };
 }
