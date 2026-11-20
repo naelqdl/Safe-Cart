@@ -11,6 +11,8 @@ import { AuditTrail } from "@/components/audit-trail";
 import { MissionsPanel } from "@/components/missions-panel";
 import { RunsPanel } from "@/components/runs-panel";
 import { ReceiptsPanel } from "@/components/receipts-panel";
+import { RefundRequestsPanel } from "@/components/refund-requests-panel";
+import { RefundRequestsView } from "@/components/refund-requests-view";
 import { StatTiles } from "@/components/stat-tiles";
 import { appConfig } from "@/config/app.config";
 import { useAutopilot } from "@/hooks/use-autopilot";
@@ -58,17 +60,17 @@ export function Dashboard() {
         ticking={state.ticking}
         onRunNow={api.runNow}
       />
-      {/* Shop = what Maya sees; Admin = agent internals and stage controls (audit trail, runs, watch list, demo bar). */}
+      {/* Shop = what Maya sees; Logs = agent internals and stage controls (audit trail, runs, watch list, demo bar). */}
       <Tabs.Root defaultValue="shop" className="flex flex-1 flex-col">
         <Tabs.List className="flex gap-1 border-b px-4 lg:px-6">
-          {[["shop", "Shop"], ["admin", "Admin"]].map(([value, label]) => (
+          {[["shop", "Shop"], ["refunds", "Refunds"], ["logs", "Logs"]].map(([value, label]) => (
             <Tabs.Tab
               key={value}
               value={value}
               className="-mb-px border-b-2 border-transparent px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[active]:border-primary data-[active]:text-foreground data-[selected]:border-primary data-[selected]:text-foreground"
             >
               {label}
-              {value === "admin" && state.error && <span className="ml-1.5 inline-block size-1.5 rounded-full bg-destructive align-middle" aria-label="error" />}
+              {value === "logs" && state.error && <span className="ml-1.5 inline-block size-1.5 rounded-full bg-destructive align-middle" aria-label="error" />}
             </Tabs.Tab>
           ))}
         </Tabs.List>
@@ -88,11 +90,16 @@ export function Dashboard() {
                 onDecline={api.decline}
               />
               <ReceiptsPanel receipts={state.receipts} />
+              <RefundRequestsPanel recalls={state.recalls} runs={state.runs} />
             </div>
           </div>
         </Tabs.Panel>
 
-        <Tabs.Panel value="admin" className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+        <Tabs.Panel value="refunds" className="flex flex-1 flex-col p-4 lg:p-6">
+          <RefundRequestsView />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="logs" className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
           {appConfig.showDemoControls && (
             <div className="overflow-hidden rounded-lg border">
               <DemoBar
