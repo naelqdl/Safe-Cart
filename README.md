@@ -6,18 +6,16 @@ SafeCart is a personal shopping agent with an audit trail, built for the Persona
 
 ## Build status
 
-Read this first. The README describes the final shape; not all of it is in this repo yet.
-
 | Part | Status |
 |---|---|
-| `web/` dashboard (Next.js), mock agent, Maya's profile, recall alerts, demo bar, Amplitude client | In the repo, runs today on the built-in mock |
-| `server/` agent backend on :8000 | In progress (jusman, other branch) |
-| `merchant/` sandbox store on :3100 | In progress (jusman, other branch) |
-| `data/` seed data and the two real CPSC recalls | In progress (jusman, other branch) |
-| `server/integrations/` sponsor clients | In progress (Hong Zhe, other branch) |
-| Firedrill evals, Cognee, Airbyte, Persona, Arcee | P1/P2, not built. No results exist yet |
-
-Nothing below is claimed as working end to end until the backend branches are merged and the demo has been run against them.
+| `web/` Electron + Next.js dashboard, recall alerts, demo bar, Amplitude client | On main |
+| `server/` agent backend on :8000 | On main; golden path passes 2/2 rounds from the app |
+| `merchant/` sandbox store on :3100 | On main |
+| `data/` seed data and two real CPSC recalls (10014, 10328) | On main |
+| `server/integrations/` sponsor clients (SingleStore, Senso, SIE, Statsig, Stripe) | On main. Each is used when its key is set; without it the trail labels the fallback |
+| Claude (decision rationale + refund-claim letter, never decides) | On main (`server/src/llm.ts`); template text without `ANTHROPIC_API_KEY` |
+| Firedrill evals | Scaffold in `evals/`, not run. No results |
+| Cognee, Airbyte, Persona, Arcee | Not built |
 
 ## Problem
 
@@ -55,6 +53,7 @@ flowchart LR
   Server --> Stripe["Stripe (TEST mode)"]
   Server --> CPSC["CPSC recall API"]
   Server --> Merchant["merchant :3100 (simulated store)"]
+  Server --> Claude["Claude (rationale, claim letter)"]
 ```
 
 Rendered: docs/architecture.svg (editable: docs/architecture.excalidraw)
@@ -79,17 +78,16 @@ The agent loop runs these steps in order. Each is an audit-trail step and a Sing
 
 | Sponsor | Job in SafeCart | File |
 |---|---|---|
-| SingleStore | Catalog, price history, wishlist, owned items, recalls table, ledger; alternative search | `server/integrations/singlestore.ts` (in progress) |
-| Senso | Trusted knowledge base of recall notices and store policy; fact-check gate before every buy | `server/integrations/senso.ts`, `server/integrations/senso-gate.ts` (in progress) |
-| Superlinked SIE | Guard and extract on untrusted listings; rerank alternatives by preferences | `server/integrations/sie.ts` (in progress) |
-| Statsig | Dynamic config `purchase_policy` and gate `recall_guard`, flipped live in the demo | `server/integrations/statsig.ts` (in progress) |
+| SingleStore | Catalog, price history, wishlist, owned items, recalls table, ledger; alternative search | `server/integrations/singlestore.ts` |
+| Senso | Trusted knowledge base of recall notices and store policy; fact-check gate before every buy | `server/integrations/senso.ts`, `server/integrations/senso-gate.ts` |
+| Superlinked SIE | Guard and extract on untrusted listings; rerank alternatives by preferences | `server/integrations/sie.ts` |
+| Statsig | Dynamic config `purchase_policy` and gate `recall_guard`, flipped live in the demo | `server/integrations/statsig.ts` |
 | Amplitude | Browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen) | `web/src/lib/analytics.ts` (in the repo; no-op without a key) |
-| Cognee | Preference memory from past orders (P1) | `server/integrations/cognee.ts` (in progress, may not ship) |
-| Airbyte | Owned items from a seeded demo inbox (P1) | `server/integrations/airbyte.ts` (in progress, may not ship) |
-| Firedrill | Naive vs SafeCart simulation (P1) | `evals/` (not built; no results yet) |
-| Stripe (not a sponsor) | Test-mode payment as the real action | `server/integrations/stripe.ts` (in progress) |
+| Firedrill | Naive vs SafeCart simulation | `evals/` (scaffold, not run; no results) |
+| Stripe (not a sponsor) | Test-mode payment as the real action | `server/integrations/stripe.ts` |
+| Claude (not a sponsor) | Writes the decision rationale and the refund-claim letter; buy/skip stays deterministic | `server/src/llm.ts` |
 
-File names for the sponsor clients follow the team briefs and may change when the branches merge.
+Cognee and Airbyte were planned and not built.
 
 ## Real vs simulated
 
@@ -126,7 +124,7 @@ npm run dev
 
 Open http://localhost:3000 and use the same steps as the desktop app. Turn on **Autopilot**. The mock buys Maya's wishlist items; the stroller mission takes the recall branch (alert, purchase skipped, alternative bought). **Check now** runs a check immediately.
 
-**With the real backend (once it is merged):** copy `web/.env.example` to `web/.env.local` and set:
+**With the real backend:** copy `web/.env.example` to `web/.env.local` and set:
 
 ```bash
 AGENT_BACKEND_URL=http://localhost:8000   # unset = built-in mock; no trailing slash
@@ -137,9 +135,16 @@ Restart the app after changing it (rebuild first if a `NEXT_PUBLIC_*` value chan
 
 `S2_URL`, `SENSO_API_KEY`, `SIE_API_KEY`, `STATSIG_SERVER_KEY`, `STRIPE_SECRET_KEY` (`sk_test_` only), `ANTHROPIC_API_KEY`, `MERCHANT_URL`. P1/P2: `LLM_API_KEY`, `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, `PERSONA_API_KEY`.
 
-Start commands for `server/` and `merchant/` will be added when those branches land. Ports: app :3210 (desktop) or web :3000 (dev), server :8000, merchant :3100.
+Start the backend first:
 
-**Demo controls** (demo bar under the header, `showDemoControls` in `web/src/config/app.config.ts`): "Put stroller on sale -30%", "Publish recall", "Reset demo". It also shows the current policy (auto-buy limit, autonomy, recall guard and its source). Sku and recall id come from `appConfig.demo` and must match the backend seed.
+```bash
+cd server/integrations && npm install && cd .. && npm install && npm run dev   # :8000, GET /health lists keys and fallbacks
+cd merchant && npm start                                                     # :3100
+```
+
+Ports: app :3210 (desktop) or web :3000 (dev), server :8000, merchant :3100.
+
+**Demo controls** (demo bar in the **Logs** tab; results show in the **Shop** tab; `showDemoControls` in `web/src/config/app.config.ts`): "Put stroller on sale -30%", "Publish recall", "Reset demo". It also shows the current policy (auto-buy limit, autonomy, recall guard and its source). Sku and recall id come from `appConfig.demo` and must match the backend seed.
 
 ### Troubleshooting
 
@@ -213,7 +218,7 @@ npm run smoke         # HTTP smoke checks; needs a running server (default http:
 
 ## Limits
 
-- Until the backend branches merge, all data in the dashboard is mock.
+- Without `AGENT_BACKEND_URL`, all data in the dashboard is mock. Without sponsor keys, the backend uses labelled fallbacks.
 - The store, shopper and inbox are simulated; refund claims go to the simulated store, not a real merchant.
 - Payments are Stripe TEST mode only. No real money moves.
 - Autopilot runs in the app window: it checks only while the dashboard is open, and state resets on reload (only the on/off switch is saved).

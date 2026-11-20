@@ -69,6 +69,9 @@ function createWindow() {
   win.on("maximize", () => win.setAlwaysOnTop(false));
   win.on("enter-full-screen", () => win.setAlwaysOnTop(false));
   win.webContents.setWindowOpenHandler(({ url: u }) => {
+    if (u.startsWith("http") && new URL(u).origin === new URL(url).origin) {
+      return { action: "allow", overrideBrowserWindowOptions: { width: 860, height: 820, autoHideMenuBar: true } };
+    }
     if (/^https?:/i.test(u)) shell.openExternal(u);
     return { action: "deny" };
   });
