@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafeShop: Online Shopping for Baby, Electronics, Home &amp; More</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23131921'/%3E%3Cpath d='M16 5l9 3v7c0 6-4 10-9 12-5-2-9-6-9-12V8z' fill='%23ff9900'/%3E%3Cpath d='M11.5 16l3.2 3.2 6-6.4' stroke='%23131921' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <a class="logo" href="#/" aria-label="SafeShop home">
+      <svg viewBox="0 0 32 32" width="30" height="30"><path d="M16 3l11 4v8c0 7-4.600 11.500-11 14C9.600 26.500 5 22 5 15V7z" fill="#ff9900"/><path d="M10.500 15.500l4 4 7-7.500" stroke="#131921" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>safe<b>shop</b></span>
+    </a>
+    <a class="deliver" href="#/" title="Delivery location"><small>Deliver to Maya</small><b>&#128205; Boston 02108</b></a>
+    <form class="search" id="searchForm" autocomplete="off">
+      <select id="searchCat" aria-label="Search category"></select>
+      <input id="searchInput" type="search" placeholder="Search SafeShop" aria-label="Search SafeShop">
+      <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="10" cy="10" r="6.500" fill="none" stroke="#131921" stroke-width="2.400"/><path d="M15 15l6 6" stroke="#131921" stroke-width="2.600" stroke-linecap="round"/></svg></button>
+    </form>
+    <a class="hl" href="#/orders"><small>Hello, Maya</small><b>Account &amp; Orders</b></a>
+    <a class="hl" href="#/orders"><small>Returns</small><b>&amp; Orders</b></a>
+    <a class="hl" href="#/wishlist"><small>Your</small><b>Wishlist <span class="pill" id="wishCount">0</span></b></a>
+    <a class="cartlink" href="#/cart" aria-label="Cart">
+      <svg viewBox="0 0 32 32" width="34" height="34"><path d="M3 5h4l3 14h14l3-10H9" fill="none" stroke="#fff" stroke-width="2.200" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="25" r="2" fill="#fff"/><circle cx="22" cy="25" r="2" fill="#fff"/></svg>
+      <span class="badge" id="cartCount">0</span><b>Cart</b>
+    </a>
+  </div>
+  <nav class="hdr-nav" id="mainNav"></nav>
+</header>
+<main id="app" class="app"></main>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<footer class="ftr">
+  <a href="#" class="totop" onclick="window.scrollTo({top:0,behavior:'smooth'});return false">Back to top</a>
+  <div class="ftr-cols">
+    <div><h4>Get to Know Us</h4><a>About SafeShop</a><a>Careers</a><a>Press</a></div>
+    <div><h4>Make Money with Us</h4><a href="#/sell">Sell on SafeShop</a><a>Advertise</a><a>Affiliate</a></div>
+    <div><h4>Let Us Help You</h4><a href="#/orders">Your Orders</a><a>Returns</a><a>Help</a></div>
+  </div>
+  <div class="ftr-note">Demo store &middot; simulated shopper and sellers &middot; some products are real recalled items (CPSC data)</div>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>

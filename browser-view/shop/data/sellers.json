@@ -1,0 +1,44 @@
+[
+ {
+  "id": "babynest",
+  "name": "BabyNest Direct",
+  "rating": 4.8,
+  "joined": "2019-03-14",
+  "about": "Family-run baby gear specialist shipping from Ohio."
+ },
+ {
+  "id": "techhaven",
+  "name": "TechHaven",
+  "rating": 4.6,
+  "joined": "2017-09-02",
+  "about": "Consumer electronics and accessories, fast shipping."
+ },
+ {
+  "id": "homeessentials",
+  "name": "HomeEssentials Co",
+  "rating": 4.4,
+  "joined": "2018-06-21",
+  "about": "Everyday home goods, appliances and cleaning."
+ },
+ {
+  "id": "kitchenpro",
+  "name": "KitchenPro Outlet",
+  "rating": 4.2,
+  "joined": "2020-01-10",
+  "about": "Kitchen appliances, open-box and factory outlet deals."
+ },
+ {
+  "id": "valuemart",
+  "name": "ValueMart Deals",
+  "rating": 3.6,
+  "joined": "2023-05-30",
+  "about": "Low prices on everything. Marketplace seller, ships from multiple warehouses."
+ },
+ {
+  "id": "littlesteps",
+  "name": "Little Steps Store",
+  "rating": 4.7,
+  "joined": "2021-02-08",
+  "about": "Toys, nursery and baby essentials curated by parents."
+ }
+]
