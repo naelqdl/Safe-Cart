@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -54,10 +54,15 @@ export function AppHeader({
   onRunNow(): void;
 }) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 border-b px-4 py-4 sm:px-6">
-      <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight">{appConfig.name}</h1>
-        <p className="text-sm text-muted-foreground">{appConfig.tagline}</p>
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b bg-card px-4 py-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+          <ShieldCheck className="size-5" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight">{appConfig.name}</h1>
+          <p className="max-w-xl text-sm text-muted-foreground">{appConfig.tagline}</p>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-6">
         {appConfig.sponsors.length > 0 && (
@@ -69,7 +74,7 @@ export function AppHeader({
                   // eslint-disable-next-line @next/next/no-img-element -- static logos from /public; no next/image config needed
                   <img src={sponsor.logo} alt={sponsor.name} className="h-6 w-auto" />
                 ) : (
-                  <span className="text-sm font-medium">{sponsor.name}</span>
+                  <span className="text-sm font-medium text-foreground/70">{sponsor.name}</span>
                 );
                 return (
                   <li key={sponsor.name}>

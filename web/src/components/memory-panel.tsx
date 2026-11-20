@@ -1,5 +1,6 @@
 "use client";
 
+import { ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,11 +13,11 @@ const cur = "USD";
 function SafetyBadge({ safety, url }: { safety?: SafetyCheck; url?: string }) {
   if (!safety) return null;
   if (safety.status === "recalled") {
-    const badge = <Badge variant="destructive">RECALLED</Badge>;
+    const badge = <Badge className="bg-destructive text-white"><ShieldAlert aria-hidden />RECALLED</Badge>;
     return url ? <a href={url} target="_blank" rel="noreferrer" title="Open the recall notice">{badge}</a> : badge;
   }
-  if (safety.status === "unknown") return <Badge variant="outline">Safety unknown</Badge>;
-  return <Badge variant="secondary">Safe</Badge>;
+  if (safety.status === "unknown") return <Badge variant="warning"><ShieldQuestion aria-hidden />Safety unknown</Badge>;
+  return <Badge variant="success"><ShieldCheck aria-hidden />Safe</Badge>;
 }
 
 // Data comes from useProfile() (called once in the dashboard and shared with the demo bar).
@@ -58,7 +59,7 @@ export function MemoryPanel({ api, recalls }: { api: ProfileApi; recalls: Recall
                 {profile.wishlist.map((w) => (
                   <li key={w.id} className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium" title={w.title}>{w.title}</p>
+                      <p className="text-sm font-medium">{w.title}</p>
                       <p className="text-xs text-muted-foreground tabular-nums">
                         {formatPrice(w.price, cur)} · target {formatPrice(w.targetPrice, cur)}
                       </p>

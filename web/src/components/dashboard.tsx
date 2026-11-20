@@ -107,7 +107,7 @@ export function Dashboard() {
       </main>
       <footer className="px-6 py-3 text-xs text-muted-foreground border-t">{appConfig.footerNote}</footer>
       </div>
-      {docked && <aside className="sticky top-0 h-dvh w-[380px] shrink-0 self-start border-l">{chatPanel("plain")}</aside>}
+      {docked && <aside className="sticky top-0 h-dvh w-[380px] shrink-0 self-start border-l bg-card">{chatPanel("plain")}</aside>}
     </div>
   );
 }

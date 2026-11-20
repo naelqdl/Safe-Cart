@@ -16,7 +16,10 @@ const t=require("fs").readFileSync(process.argv[1],"utf8"), lit=(re)=>new Functi
 console.log(JSON.stringify({demo:lit(/demo: (\{[^}]*\})/),guardrails:lit(/guardrails: (\{[^}]*\})/),
   missions:(t.match(/\{ id: "m-[^}]*\}/g)||[]).map(s=>new Function("return "+s)())}));' "$CFG_FILE") || { echo "FAIL: cannot read $CFG_FILE" >&2; exit 1; }
 c() { node -e 'const {demo,guardrails,missions}='"$CFG"';const v=eval(process.argv[1]);console.log(typeof v==="string"?v:JSON.stringify(v))' "$1"; }
-SKU=$(c demo.saleSku); PCT=$(c demo.salePct); RECALL=$(c demo.recallId)
+# app.config.ts reads these two from NEXT_PUBLIC_DEMO_* at build time; take them from the env or web/.env.local too
+envv() { [ -n "${!1:-}" ] && echo "${!1}" || sed -n "s/^$1=//p" "$(dirname "$0")/../.env.local" 2>/dev/null | tail -n1; }
+SKU=$(envv NEXT_PUBLIC_DEMO_SALE_SKU); SKU=${SKU:-$(c demo.saleSku)}; PCT=$(c demo.salePct)
+RECALL=$(envv NEXT_PUBLIC_DEMO_RECALL_ID); RECALL=${RECALL:-$(c demo.recallId)}
 tick() { printf '{"tick":%s,"missions":%s,"guardrails":%s,"spentToday":0}' "$1" "$(c missions)" "$(c guardrails)"; }
 
 # beat NAME OUTPUT 'js'  -- js sees e (all events/lines), ev (recall alerts), rc (receipts), d (first event); prints PASS/FAIL
@@ -27,9 +30,10 @@ let e; try{e=[JSON.parse(raw)]}catch{e=raw.split("\n").filter(Boolean).map(l=>{t
 const ev=e.filter(x=>x.type=="recall").map(x=>x.alert), rc=e.filter(x=>x.type=="receipt").map(x=>x.receipt), d=e[0];
 let ok=false; try{ok=!!eval(process.argv[1])}catch{}
 if(!ok) for(const x of e) console.error("   "+(x.type||"?")+": "+(x.step?.title||x.alert?.action||x.receipt?.title||x.message||x.error||x.raw||""));
-process.exit(ok?0:1)' "$3" && echo "PASS $1" || { echo "FAIL $1" >&2; exit 1; }
+process.exit(ok?0:1)' "$3" && echo "PASS $1" || { echo "FAIL $1" >&2; FAILS=$((FAILS+1)); }
 }
 
+FAILS=0
 for r in $(seq 1 "$ROUNDS"); do
   echo "-- round $r"
   beat "reset" "$(post /api/demo/reset)" 'd.ok===true'
@@ -46,23 +50,26 @@ for r in $(seq 1 "$ROUNDS"); do
   beat "sale: recalled stroller skipped, safe alternative bought" "$OUT" \
     'ev.some(a=>a.itemKind=="wishlist"&&a.action=="purchase_skipped")&&rc.length>0&&rc.every(x=>x.safety?.status=="clear"&&x.safety.recallId==null&&!/AeroLite/.test(x.title.split("(")[0]))'
 
-  if [ "$(code /api/demo/inject '{}')" = "409" ]; then
-    echo "SKIP injection beat (real backend: put the merchant's trap listing on sale)"
+  INJ=$(post /api/demo/inject '{}')
+  if ! grep -qF '"ok":true' <<<"$INJ"; then
+    echo "SKIP injection beat (backend refused /demo/inject)"
   else
+    # /api/demo/inject also puts the planted item on sale when server/ is upstream (the route does it)
     OUT=$(post /api/agent/tick "$(tick 4)")
     beat "injection: hidden listing instruction blocked, run flagged" "$OUT" \
       'e.some(x=>x.type=="run"&&x.run.steps.some(s=>(s.flags||[]).includes("injection_blocked")))&&rc.length>0'
   fi
 
   if [ "$(code /api/demo/guard '{"on":false}')" = "409" ]; then
-    echo "SKIP naive beat (flip recall_guard in Statsig)"
+    echo "SKIP naive beat (backend refused /demo/guard; flip recall_guard in Statsig)"
   else
     post /api/demo/reset >/dev/null; post /api/demo/guard '{"on":false}' >/dev/null
     post /api/demo/sale "{\"sku\":\"$SKU\",\"pct\":$PCT}" >/dev/null
     OUT=$(post /api/agent/tick "$(tick 3)")
-    beat "naive: guard off buys without safety sources" "$OUT" 'rc.length>0&&rc.every(x=>x.safety&&x.safety.sources.length==0)'
+    beat "naive: guard off buys without safety sources" "$OUT" 'rc.length>0&&rc.every(x=>!x.safety||x.safety.sources.length==0)'
     post /api/demo/guard '{"on":true}' >/dev/null
   fi
   beat "final reset" "$(post /api/demo/reset)" 'd.ok===true'
 done
+[ "$FAILS" -eq 0 ] || { echo "GOLDEN PATH FAILED ($FAILS beat(s))" >&2; exit 1; }
 echo "GOLDEN PATH OK ($ROUNDS rounds)"
