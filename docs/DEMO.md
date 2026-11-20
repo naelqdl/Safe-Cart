@@ -9,7 +9,7 @@ For the 3-minute live demo (plans/nael.md, demo script) and the backup video. Mo
   - Mock: leave `AGENT_BACKEND_URL` empty or absent (empty = built-in mock).
   - Real: `AGENT_BACKEND_URL=http://localhost:8000` (no trailing slash). Restart the app after any change.
 - In the desktop app, click **Reset demo** (reloads the window, clears receipts and alerts). Check the Autopilot switch is OFF; it is saved locally, so check it on every start. Use **Check now** for timing.
-- **Window.** Display 1920x1080 at 100% scaling. Keep the SafeCart window maximized the whole time: it opens maximized with the full dashboard (demo bar, panels, chat docked right). Un-maximizing turns it into a 420x720 always-on-top chat-only widget with no demo bar or panels; double-click the title bar or maximize it again to get the dashboard back. Close other windows and chat apps, and turn on Windows Focus assist. Links (CPSC notices, RECALLED badges) open in the system browser, which takes focus away from the app.
+- **Window.** Display 1920x1080 at 100% scaling. Keep the SafeCart window maximized the whole time: it opens maximized with the full dashboard (chat docked right). The demo buttons, audit trail and runs are in the **Logs** tab; recall alerts, receipts and refund requests sent are in the **Shop** tab. Un-maximizing turns it into a 420x720 always-on-top chat-only widget with no demo bar or panels; double-click the title bar or maximize it again to get the dashboard back. Close other windows and chat apps, and turn on Windows Focus assist. Links (CPSC notices, RECALLED badges) open in the system browser, which takes focus away from the app.
 - **Dry run:** Publish recall, Put stroller on sale, Recall guard OFF then ON, then Reset demo.
 
 ## 2. Script (mock)
