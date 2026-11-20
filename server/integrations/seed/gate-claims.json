@@ -1,0 +1,23 @@
+{
+  "carryover": { "spd@1": 680, "spd@2": 500 },
+  "evals": [
+    {
+      "id": "multivitamin",
+      "question": "Can I buy a daily multivitamin with my FSA?",
+      "text": "A daily multivitamin taken for general health is an eligible health FSA expense.",
+      "expect": "conflict"
+    },
+    {
+      "id": "otc-ibuprofen",
+      "question": "Do I need a prescription to buy ibuprofen with my FSA?",
+      "text": "Over-the-counter pain relievers such as ibuprofen are eligible health FSA expenses without a prescription.",
+      "expect": "verified"
+    },
+    {
+      "id": "toothpaste",
+      "question": "Can I buy toothpaste with my FSA?",
+      "text": "Toothpaste is an eligible health FSA expense.",
+      "expect": "conflict"
+    }
+  ]
+}

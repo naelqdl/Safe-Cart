@@ -1,0 +1,19 @@
+From: orders@demobabystore.example
+To: maya.chen@example.com
+Subject: Your order ORD-1002 is confirmed
+Date: Sun, 02 Mar 2025 10:00:00 +0000
+Message-ID: <ORD-1002@demobabystore.example>
+Content-Type: text/plain; charset=utf-8
+
+Demo Baby Store (SIMULATED)
+Thank you for your order, Maya!
+
+Order: ORD-1002
+Order date: 2025-03-02
+Item: Ollie & Moss Bedside Bassinet
+Brand: Ollie & Moss
+Model: OM-BS1
+Qty: 1
+Total: $149.00
+
+This is a simulated demo email.

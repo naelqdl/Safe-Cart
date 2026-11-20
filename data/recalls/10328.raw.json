@@ -1,0 +1,87 @@
+{
+  "RecallID": 10328,
+  "RecallNumber": "25706",
+  "RecallDate": "2025-06-26T00:00:00",
+  "Description": "This recall involves Peg Perego Tatamia recliners, swings and high chairs. The products convert from a recliner to a high chair and to an unpowered infant swing, and they were sold in \"Ice\" (gray) color with model number IMTATANA01BL73. The top of the padded leather seat has the brand name \"Peg Perego\" printed on it. In high chair mode \"Peg Perego\" is printed on the front of the tray. The adjustable side of the product has \"tatamia\" printed on it. Only products manufactured on or after June 23, 2022, and/or purchased on or after November 12, 2022, are included in this recall. The manufacture date in YYYY/MM/DD format and model number can be found on the base of the product.",
+  "URL": "https://www.cpsc.gov/Recalls/2025/Peg-Perego-Recalls-Tatamia-3-in-1-Recliners-Swings-and-High-Chairs-Due-to-Risk-of-Suffocation-Violations-of-Multiple-Federal-Standards-Recall-Alert",
+  "Title": "Peg Perego Recalls Tatamia 3-in-1 Recliners, Swings and High Chairs Due to Risk of Suffocation; Violations of Multiple Federal Standards (Recall Alert)",
+  "ConsumerContact": "Peg Perego toll-free at 877-737-3464 from 9 a.m. to 5 p.m. ET Monday through Friday, email at service@pegperego.com or online at https://www.pegperego.com/en_us/baby/recalls or https://www.pegperego.com/en_us/baby/ and click on \"Recalls\" at the bottom of the page for more information.",
+  "LastPublishDate": "2025-06-26T00:00:00",
+  "Products": [
+    {
+      "Name": "Peg Perego Tatamia 3-in-1 Recliner, Swings and High Chairs",
+      "Description": "",
+      "Model": "",
+      "Type": "",
+      "CategoryID": "",
+      "NumberOfUnits": "About 950"
+    }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Tatamia-1.jpg",
+      "Caption": "Recalled Peg Perego Tatamia 3-in-1 in High Chair Mode"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Tatamia-2.png",
+      "Caption": "Recalled Peg Perego Tatamia 3-in-1 in Swing Mode"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Tatamia-3.png",
+      "Caption": "Recalled Peg Perego Tatamia 3-in-1 in Recliner Mode"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Tatamia-4.jpg",
+      "Caption": "Label with Date of Manufacture and Model Number Found on Base of Product"
+    }
+  ],
+  "Injuries": [
+    {
+      "Name": "None reported"
+    }
+  ],
+  "Manufacturers": [
+    {
+      "Name": "Peg Perego SPA, of Italy",
+      "CompanyID": ""
+    }
+  ],
+  "Retailers": [
+    {
+      "Name": "Online at PegPerego.com, Amazon.com, Target.com and other websites from November 2022 through January 2025 for about $450.",
+      "CompanyID": ""
+    }
+  ],
+  "Importers": [
+    {
+      "Name": "Peg Perego USA Inc., of Fort Wayne, Indiana",
+      "CompanyID": ""
+    }
+  ],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+    {
+      "Country": "Italy"
+    }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+    {
+      "Name": "The 3-in-1 products pose a suffocation risk because they were marketed for infant sleep, and they have an incline angle greater than 10 degrees, in violation of the Infant Sleep Products Rule and Safe Sleep for Babies Act. In addition, the products fail to meet mandatory warning requirements under the high chair standard.",
+      "HazardType": "",
+      "HazardTypeID": ""
+    }
+  ],
+  "Remedies": [
+    {
+      "Name": "Consumers should immediately stop using the recalled products and contact Peg Perego for a full refund. Consumers should contact Peg Perego for a prepaid shipping label and packaging to send the products back to Peg Perego. Peg Perego and Amazon are contacting all known purchasers directly."
+    }
+  ],
+  "RemedyOptions": [
+    {
+      "Option": "Refund"
+    }
+  ]
+}

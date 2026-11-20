@@ -1,0 +1,68 @@
+[
+  {
+    "id": "o1",
+    "sku": "HC-PEGPEREGO-01",
+    "title": "Peg Perego Tatamia 3-in-1 Recliner, Swing and High Chair, Ice",
+    "brand": "Peg Perego",
+    "model": "IMTATANA01BL73",
+    "category": "high_chair",
+    "purchasedAt": "2025-02-14",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1001"
+  },
+  {
+    "id": "o2",
+    "sku": "BAS-OLLIE-01",
+    "title": "Ollie & Moss Bedside Bassinet",
+    "brand": "Ollie & Moss",
+    "model": "OM-BS1",
+    "category": "bassinet",
+    "purchasedAt": "2025-03-02",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1002"
+  },
+  {
+    "id": "o3",
+    "sku": "CS-NUVO-01",
+    "title": "Nuvo Safe Convertible Car Seat",
+    "brand": "Nuvo",
+    "model": "NV-CS400",
+    "category": "car_seat",
+    "purchasedAt": "2025-03-20",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1003"
+  },
+  {
+    "id": "o4",
+    "sku": "BTL-OLLIE-01",
+    "title": "Ollie & Moss Glass Bottle Set (4)",
+    "brand": "Ollie & Moss",
+    "model": "OM-BT4",
+    "category": "bottles",
+    "purchasedAt": "2025-04-08",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1004"
+  },
+  {
+    "id": "o5",
+    "sku": "SW-OLLIE-01",
+    "title": "Ollie & Moss Muslin Swaddles (4)",
+    "brand": "Ollie & Moss",
+    "model": "OM-SW4",
+    "category": "swaddles",
+    "purchasedAt": "2025-04-22",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1005"
+  },
+  {
+    "id": "o6",
+    "sku": "TH-NUVO-01",
+    "title": "Nuvo Digital Ear Thermometer",
+    "brand": "Nuvo",
+    "model": "NV-TH5",
+    "category": "health",
+    "purchasedAt": "2025-05-10",
+    "merchant": "Demo Baby Store (SIMULATED)",
+    "orderRef": "ORD-1006"
+  }
+]

@@ -1,0 +1,31 @@
+[
+  {
+    "id": "w1",
+    "sku": "STR-BESREY-01",
+    "title": "Besrey Twins Double Stroller, Gray/Black",
+    "targetPrice": 150,
+    "priority": 1,
+    "secondChoiceSku": "STR-NUVO-01"
+  },
+  {
+    "id": "w2",
+    "sku": "MON-NUVO-01",
+    "title": "Nuvo WatchView Video Baby Monitor",
+    "targetPrice": 75,
+    "priority": 2
+  },
+  {
+    "id": "w3",
+    "sku": "WN-OLLIE-01",
+    "title": "Ollie & Moss Hush White Noise Machine",
+    "targetPrice": 28,
+    "priority": 3
+  },
+  {
+    "id": "w4",
+    "sku": "BW-KESTREL-01",
+    "title": "Kestrel WarmUp Bottle Warmer",
+    "targetPrice": 26,
+    "priority": 4
+  }
+]

@@ -1,0 +1,19 @@
+From: orders@demobabystore.example
+To: maya.chen@example.com
+Subject: Your order ORD-1004 is confirmed
+Date: Tue, 08 Apr 2025 10:00:00 +0000
+Message-ID: <ORD-1004@demobabystore.example>
+Content-Type: text/plain; charset=utf-8
+
+Demo Baby Store (SIMULATED)
+Thank you for your order, Maya!
+
+Order: ORD-1004
+Order date: 2025-04-08
+Item: Ollie & Moss Glass Bottle Set (4)
+Brand: Ollie & Moss
+Model: OM-BT4
+Qty: 1
+Total: $24.99
+
+This is a simulated demo email.
