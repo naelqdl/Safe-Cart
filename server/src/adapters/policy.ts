@@ -21,7 +21,8 @@ export async function getPolicy(): Promise<Policy & { latencyMs: number }> {
     autoBuyLimit: d.autoBuyLimit ?? 150, minDiscountPct: d.minDiscountPct ?? 20, dailyBudget: d.dailyBudget ?? 400,
     autonomy: 'auto', recallGuard: true, source: 'default', note: 'defaults from data/user.json',
   };
-  if (statsig?.getPolicy) {
+  if (statsig?.getPolicy && !process.env.STATSIG_SERVER_KEY?.trim()) p.note = 'defaults from data/user.json (no STATSIG_SERVER_KEY)';
+  else if (statsig?.getPolicy) {
     try {
       const s = await statsig.getPolicy();
       p = { ...p, ...pick(s), source: 'statsig', note: 'Statsig purchase_policy + recall_guard' };
