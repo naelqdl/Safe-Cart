@@ -3,9 +3,10 @@ Typed sponsor clients per vault doc `K-integrations`. No agent logic: typed I/O,
 
 | module | functions | env |
 |---|---|---|
-| `senso.ts` | `ingestText`, `searchContext`, `factCheck`, `whoAmI`, `creditBalance` | `SENSO_API_KEY` |
+| `senso.ts` | `ingestText`, `updateText`, `findDoc`, `searchContext`, `factCheck`, `whoAmI`, `creditBalance` | `SENSO_API_KEY` |
 | `stripe.ts` | `mintSpt`, `pay` (test mode only; live keys refused; idempotency key per payment) | `STRIPE_SECRET_KEY` |
 | `sie.ts` | `extract`, `rerank`, `guard`, `classify`, `warm` | `SIE_API_KEY` |
+| `spd.ts` | `activeSpd`, `setActiveSpd`, `readCarryover` (pinned SPD; see seed/README.md) | `SENSO_API_KEY` |
 
 Functions that return lists wrap them: `searchContext → {passages}`, `rerank → {results}`, `extract → {entities}`, so `latencyMs` and `model` fit alongside.
 

@@ -13,7 +13,6 @@
     "smoke:sie": "tsx sie.smoke.ts",
     "typecheck": "tsc --noEmit",
     "seed": "tsx seed/seed.ts",
-    "seed:v2": "tsx seed/seed.ts --version spd=2",
     "gate": "tsx seed/gate.ts"
   },
   "dependencies": {

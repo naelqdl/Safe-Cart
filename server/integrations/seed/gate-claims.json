@@ -1,20 +1,23 @@
-[
-  {
-    "id": "carryover",
-    "question": "How much of my unused FSA balance carries over to next year?",
-    "text": "Under the plan, up to $680 of unused health FSA funds carry over into the next plan year.",
-    "expect": { "spd@1": "verified", "spd@2": "conflict" }
-  },
-  {
-    "id": "multivitamin",
-    "question": "Can I buy a daily multivitamin with my FSA?",
-    "text": "A daily multivitamin taken for general health is an eligible health FSA expense.",
-    "expect": "conflict"
-  },
-  {
-    "id": "otc-ibuprofen",
-    "question": "Do I need a prescription to buy ibuprofen with my FSA?",
-    "text": "Over-the-counter pain relievers such as ibuprofen are eligible health FSA expenses without a prescription.",
-    "expect": "verified"
-  }
-]
+{
+  "carryover": { "spd@1": 680, "spd@2": 500 },
+  "evals": [
+    {
+      "id": "multivitamin",
+      "question": "Can I buy a daily multivitamin with my FSA?",
+      "text": "A daily multivitamin taken for general health is an eligible health FSA expense.",
+      "expect": "conflict"
+    },
+    {
+      "id": "otc-ibuprofen",
+      "question": "Do I need a prescription to buy ibuprofen with my FSA?",
+      "text": "Over-the-counter pain relievers such as ibuprofen are eligible health FSA expenses without a prescription.",
+      "expect": "verified"
+    },
+    {
+      "id": "toothpaste",
+      "question": "Can I buy toothpaste with my FSA?",
+      "text": "Toothpaste is an eligible health FSA expense.",
+      "expect": "conflict"
+    }
+  ]
+}
