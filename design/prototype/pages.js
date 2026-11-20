@@ -7,7 +7,6 @@
   const empty = (t) => `<div class="pg-card"><p style="color:var(--muted)">${t}</p></div>`;
   const ago = (iso) => { const s = Math.round((Date.now() - Date.parse(iso)) / 1000); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
   const ACT = { purchase_skipped: ['Skipped the purchase', 'warn'], refund_claim_filed: ['Refund claim filed', 'steel'], replacement_bought: ['Safe replacement bought', 'ok'], needs_you: ['Needs Maya', 'bad'] };
-  let refunds = { claims: [] };
   const localMissions = [];
 
   function recalls() {
@@ -22,18 +21,53 @@
       </div>`).join('') : empty('No recalls affect Maya’s items yet. Press 2 to publish one.'));
   }
 
-  async function loadRefunds() { try { refunds = await (await SC.api('/refunds')).json(); } catch (e) { refunds = { claims: [], error: e.message }; } refundsPage(); }
+  // Refunds: live requests the agent filed at the store (+ Claude's letter, store reply, recall facts) and
+  // sample requests on real CPSC recalls (data/sample-refunds.json, labelled Sample), like the web Refunds tab.
+  const RF = { refund_approved: ['Refund approved', 'ok'], info_requested: ['Store needs info', 'steel'] };
+  const rfStatus = (c) => RF[c.status] ?? ['Waiting for reply', 'warn'];
+  const when = (iso) => new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const allRefunds = () => [...(S.refunds.claims ?? []), ...(S.refunds.samples ?? [])];
+  let rfSig = '';
+  async function loadRefunds() {
+    try { const r = await (await SC.api('/refunds')).json(); S.refunds = { claims: r.claims ?? [], samples: r.samples ?? [], source: r.source }; }
+    catch (e) { S.refunds = { ...S.refunds, error: e.message }; }
+    const sig = JSON.stringify(allRefunds().map((c) => [c.claimRef, c.status, !!c.reply]));
+    if (sig !== rfSig) { rfSig = sig; refundsPage(); SC.emit('refunds'); }
+  }
   function refundsPage() {
     const el = $('pgRefunds'); if (!el) return;
-    el.innerHTML = head('Refunds', `When a recall hits something Maya owns, SafeCart writes to the store and asks for the refund. Source: ${esc(refunds.source ?? '—')}.`, '<button class="btn ghost" id="rfReload">Refresh</button>') +
-      (refunds.claims?.length ? [...refunds.claims].reverse().map((c) => `<div class="pg-card">
-        <div class="chips"><span class="badge steel">${esc(c.claimRef)}</span><span class="badge ${/filed|approved|paid/i.test(c.storeStatus) ? 'ok' : 'warn'}">Store: ${esc(c.storeStatus ?? c.status ?? 'filed')}</span><span class="badge idle">CPSC ${esc(c.recallId)}</span>${c.at ? `<span class="meta">${ago(c.at)}</span>` : ''}</div>
-        <h3>${esc(c.itemTitle)}</h3>
-        ${c.letter ? `<div class="meta">Letter${c.letterModel && c.letterModel !== 'template' ? ` written by ${esc(c.letterModel)}` : ' (template)'}</div><p style="white-space:pre-wrap">${esc(c.letter)}</p>` : ''}
-        ${c.storeReply ? `<div class="meta">Store reply</div><p>${esc(c.storeReply)}</p>` : ''}
-      </div>`).join('') : empty(refunds.error ? `Couldn't load refunds: ${esc(refunds.error)}` : 'No refund requests yet. They appear when a recall hits an owned item.'));
-    const b = $('rfReload'); if (b) b.onclick = loadRefunds;
+    const list = allRefunds(); const replied = list.filter((c) => c.reply).length; const live = S.refunds.claims?.length ?? 0;
+    $('ctRefunds').hidden = !live; $('ctRefunds').textContent = live;
+    el.innerHTML = head('Refunds', 'What SafeCart sent for Maya’s recalled items, and what came back. Click one to read the emails.',
+      `<div class="chips"><span class="badge idle">${list.length} sent</span><span class="badge ${replied ? 'ok' : 'idle'}">${replied} replied</span></div>`) +
+      (S.refunds.error ? `<p class="fine-note" style="color:var(--bad)">Couldn't reach the agent: ${esc(S.refunds.error)}</p>` : '') +
+      `<div class="pg-card flush"><ul class="rf-list">${list.map((c) => {
+        const [label, cls] = rfStatus(c);
+        const byClaude = c.letterModel && c.letterModel !== 'template';
+        return `<li><button class="rf-row" data-rf="${esc(c.claimRef)}">
+          <span class="rf-main"><svg class="rf-ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <span class="rf-txt"><b>${esc(c.itemTitle)}</b><small>To ${esc(c.to ?? 'Demo Baby Store')} · CPSC recall ${esc(c.recallId ?? '?')} · ${when(c.at)}</small></span></span>
+          <span class="rf-tags">${c.sample ? '<span class="tag">Sample</span>' : '<span class="tag live">Live</span>'}${byClaude ? '<span class="tag">Letter by Claude</span>' : ''}<span class="badge ${cls}">${label}</span></span>
+        </button></li>`;
+      }).join('') || '<li class="rf-empty">No refund requests yet.</li>'}</ul></div>
+      <p class="fine-note">Live requests come from the simulated store, which replies automatically after about 10 s. Sample requests use real CPSC recalls from November 2026 (saferproducts.gov); their emails, order numbers and replies are made up for the demo.</p>`;
   }
+  const email = (from, to, at, body) => `<article class="email"><dl><dt>From</dt><dd>${esc(from)}</dd><dt>To</dt><dd>${esc(to)}</dd><dt>Sent</dt><dd>${when(at)}</dd></dl><div class="body">${esc(body)}</div></article>`;
+  function openRefund(ref) {
+    const c = allRefunds().find((x) => x.claimRef === ref); if (!c) return;
+    const [label, cls] = rfStatus(c); const to = c.to ?? 'Demo Baby Store'; const me = 'SafeCart, for Maya Chen';
+    const sh = $('sheet');
+    sh.innerHTML = `<header><div><h4>Refund request · ${esc(c.claimRef)}</h4><h3>${esc(c.itemTitle)}</h3>
+        <div class="chips" style="margin-top:8px"><span class="badge ${cls}">${label}</span>${c.sample ? '<span class="tag">Sample</span>' : '<span class="tag live">Live</span>'}${c.orderRef ? `<span class="tag">Order ${esc(c.orderRef)}</span>` : ''}</div></div>
+        <button class="x" id="sheetX" aria-label="Close">×</button></header>
+      <h4>Sent${c.letterModel && c.letterModel !== 'template' ? ` · written by ${esc(c.letterModel)}` : ''}</h4>${email(me, to, c.at, c.message ?? 'Letter not recorded for this request.')}
+      <h4>Reply</h4>${c.reply ? email(to, me, c.reply.at, c.reply.text) : '<p class="fine-note">No reply yet.</p>'}
+      ${c.hazard || c.url ? `<h4>CPSC recall ${esc(c.recallId)}</h4><div class="pg-card">${c.recallTitle ? `<h3>${esc(c.recallTitle)}</h3>` : ''}${c.hazard ? `<p><b>Hazard.</b> ${esc(c.hazard)}</p>` : ''}${c.remedy ? `<p><b>Remedy.</b> ${esc(c.remedy)}</p>` : ''}${c.url ? `<a class="btn ghost" style="justify-self:start" href="${esc(c.url)}" target="_blank" rel="noreferrer">Recall notice on cpsc.gov ↗</a>` : ''}</div>` : ''}`;
+    sh.classList.add('open'); $('sheetBg').classList.add('open');
+    $('sheetX').onclick = () => { sh.classList.remove('open'); $('sheetBg').classList.remove('open'); };
+  }
+  SC.openRefund = openRefund;
+  S.refunds = { claims: [], samples: [] };
 
   function memory() {
     const p = S.profile; if (!p) return;
@@ -90,10 +124,14 @@
     const ap = e.target.closest('[data-ap]'); if (ap) SC.approve(ap.dataset.ap, true);
     const de = e.target.closest('[data-de]'); if (de) SC.approve(de.dataset.de, false);
     const rn = e.target.closest('.view.page [data-run]'); if (rn) SC.openRun(+rn.dataset.run);
+    const rf = e.target.closest('[data-rf]'); if (rf) openRefund(rf.dataset.rf);
   });
   let t = null;
   SC.on((type) => {
     clearTimeout(t);
-    t = setTimeout(() => { renderAll(); if (type === 'tickdone' || (type === 'page' && S.page === 'refunds')) loadRefunds(); }, 80);
+    t = setTimeout(() => { renderAll(); if (type === 'tickdone' || type === 'reset' || (type === 'page' && S.page === 'refunds')) loadRefunds(); }, 80);
   });
+  // the store answers ~10 s after a claim: poll while a reply is pending or the user is looking
+  setInterval(() => { if (S.page === 'refunds' || S.page === 'graph' || S.refunds.claims.some((c) => !c.reply)) loadRefunds(); }, 3000);
+  loadRefunds();
 })();

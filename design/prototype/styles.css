@@ -117,7 +117,7 @@ a { color: inherit; }
 .gcard .k { font: 600 10px var(--mono); letter-spacing: 1.4px; color: var(--muted); text-transform: uppercase; }
 .gcard h4 { font: 500 17px/1.3 var(--display); } .gcard p { font-size: 12.5px; color: var(--ink-2); }
 .gcard .links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.gtools { position: absolute; left: 24px; bottom: 24px; display: flex; gap: 6px; }
+.gtools { position: absolute; left: 76px; bottom: 30px; display: flex; gap: 6px; }
 .gtools button { height: 32px; padding: 0 12px; border-radius: 8px; background: var(--glass-hi); box-shadow: 0 0 0 1px var(--line); font-size: 12px; font-weight: 500; }
 .gtools button.on { background: var(--graphite); color: #fff; }
 
@@ -227,3 +227,25 @@ a { color: inherit; }
   .overlay { width: min(420px, calc(100% - 300px)); }
   .pages button { padding: 0 10px; }
 }
+
+/* Refunds (ported from the web Refunds tab, PR #13) */
+.pg-card.flush { padding: 0; display: block; overflow: hidden; }
+.rf-list { list-style: none; }
+.rf-list li + li { border-top: 1px solid var(--line); }
+.rf-row { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 20px; text-align: left; transition: background .18s; }
+.rf-row:hover, .rf-row:focus-visible { background: rgba(255, 255, 255, .6); outline: none; }
+.rf-main { display: flex; gap: 12px; min-width: 0; align-items: flex-start; }
+.rf-ic { flex-shrink: 0; margin-top: 2px; color: var(--muted); }
+.rf-txt { min-width: 0; }
+.rf-txt b { display: block; font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rf-txt small { display: block; margin-top: 2px; font: 11.5px var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rf-tags { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.rf-empty { padding: 18px 20px; color: var(--muted); }
+.tag { font: 600 10px var(--mono); letter-spacing: .6px; text-transform: uppercase; padding: 3px 7px; border-radius: 6px; background: rgba(24, 28, 34, .06); color: var(--ink-2); white-space: nowrap; }
+.tag.live { background: rgba(95, 132, 168, .14); color: #3c5a77; }
+.fine-note { font-size: 12px; color: var(--muted); }
+.email { border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.email dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; padding: 10px 14px; font-size: 12px; background: rgba(24, 28, 34, .035); border-bottom: 1px solid var(--line); }
+.email dt { color: var(--muted); }
+.email .body { padding: 14px; white-space: pre-wrap; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.sheet > * { flex-shrink: 0; }

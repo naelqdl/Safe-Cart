@@ -16,7 +16,7 @@
       <button data-page="autopilot" class="on">Autopilot</button>
       <button data-page="graph">Graph</button>
       <button data-page="recalls">Recalls<span class="ct" id="ctRecalls" hidden>0</span></button>
-      <button data-page="refunds">Refunds</button>
+      <button data-page="refunds">Refunds<span class="ct" id="ctRefunds" hidden>0</span></button>
       <button data-page="memory">Memory</button>
       <button data-page="approvals">Approvals<span class="ct" id="ctApprovals" hidden>0</span></button>
       <button data-page="activity">Activity</button>
@@ -64,11 +64,11 @@
         <div id="graph"></div>
         <div class="legend">
           <h3>Trust graph</h3>
-          <p>Everything SafeCart knows about Maya, and every source it checked before spending. Grows live while the agent works.</p>
+          <p>Everything SafeCart knows about Maya, every source it checked before spending, and every refund it asked for. Grows live while the agent works. Dashed = sample (real CPSC recall, made-up order).</p>
           <div class="keys">
             <span><i style="background:#262a31"></i>Maya</span><span><i style="background:#8a9fb5"></i>Wishlist</span>
             <span><i style="background:#a7aeb7"></i>Owned</span><span><i style="background:#cf4a4a"></i>Recall</span>
-            <span><i style="background:#3a9a6e"></i>Purchase</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #5f84a8"></i>Source</span>
+            <span><i style="background:#3a9a6e"></i>Purchase</span><span><i style="background:#5f84a8"></i>Refund request</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #5f84a8"></i>Source</span>
           </div>
         </div>
         <div class="gstats" id="gstats"></div>
