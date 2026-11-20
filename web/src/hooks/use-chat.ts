@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/format";
 import type { AutopilotApi, ChatAction, ChatContext, ChatMessage, ChatReply, ChatRequest } from "@/lib/agent/types";
 
 const MAX = 100;
-const GREETING = "Hi! I watch your missions and buy within your guardrails. Try “watch AirPods under $150”, “pause”, or “what did you buy?”";
+const GREETING = "Hi Maya! I watch your wishlist and buy within your rules, and I check every purchase against product recalls first. Try “watch a car seat under $120”, “pause”, or “what did you buy?”";
 
 export function useChat(api: AutopilotApi): { messages: ChatMessage[]; sending: boolean; send(text: string): void } {
   const [messages, setMessages] = useState<ChatMessage[]>([]);

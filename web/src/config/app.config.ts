@@ -9,26 +9,31 @@ export interface Sponsor {
 
 export const appConfig = {
   // App name in the header and browser tab
-  name: "ShopAgent",
+  name: "SafeCart",
   // One-line pitch under the name and in the page description
-  tagline: "Your shopping agent works on its own, and shows a receipt for every decision.",
+  tagline: "Every shopping agent finds you a deal. Ours checks it's safe first, and keeps protecting what you already own.",
   // Default currency code for price formatting
   currency: "USD",
   // Seconds between proactive checks while Autopilot is on
   checkIntervalSeconds: 12,
   // Seed the Runs panel with the two K-trail demo runs (happy path + injection attack); set false once a backend emits real runs
-  showDemoRuns: true,
+  showDemoRuns: false,
+  // SafeCart demo bar (sale / recall / reset buttons). Ids must match the backend seed (data/**) once AGENT_BACKEND_URL is set.
+  showDemoControls: true,
+  demo: { saleSku: "SKU-STROLLER", salePct: 30, recallId: "MOCK-HIGHCHAIR" },
   // What the agent may do without asking
-  guardrails: { autoBuyLimit: 50, dailyBudget: 300 } as Guardrails,
+  guardrails: { autoBuyLimit: 150, dailyBudget: 500 } as Guardrails,
   // Starting missions the agent watches (users can add more on the dashboard).
   // Demo triggers: a title containing "fail" makes its check error; "decline" makes its purchase fail.
+  // SafeCart: Maya's wishlist (title + target price). A title containing "stroller" takes the mock's recall branch.
   missions: [
-    { id: "m-charger", title: "USB-C laptop charger", maxPrice: 40, currency: "USD" },
-    { id: "m-coffee", title: "Coffee beans, 1 kg", maxPrice: 30, currency: "USD" },
-    { id: "m-headphones", title: "Noise-cancelling headphones", maxPrice: 250, currency: "USD" },
+    { id: "m-monitor", title: "Video baby monitor", maxPrice: 120, currency: "USD" },
+    { id: "m-noise", title: "White-noise machine", maxPrice: 40, currency: "USD" },
+    { id: "m-warmer", title: "Bottle warmer", maxPrice: 35, currency: "USD" },
+    { id: "m-stroller", title: "AeroLite travel stroller", maxPrice: 180, currency: "USD" },
   ] as Mission[],
   // "Powered by" strip: add { name, url, logo: "/sponsors/<file>.svg" }; logos go in web/public/sponsors/; empty array hides the strip
-  sponsors: [] as Sponsor[],
+  sponsors: [{ name: "SingleStore" }, { name: "Senso" }, { name: "Superlinked" }, { name: "Statsig" }, { name: "Amplitude" }] as Sponsor[],
   // Small print in the footer
-  footerNote: "Demo build: mock agent data until a backend is connected. No real purchases are made.",
+  footerNote: "Store and shopper are simulated. Recall data is real (CPSC). Payments are Stripe TEST mode.",
 };

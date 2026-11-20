@@ -49,6 +49,12 @@ const run = (status) => ({ type: "run", run: { id: "r1", status, steps: [], clai
 const r1 = [run("running"), run("done"), { type: "run", run: { id: "r2" } }].reduce(applyEvent, init);
 assert.deepEqual(r1.runs.map((r) => r.id + r.status), ["r1done", "r2undefined"]);
 
+// recall upsert by id, newest first
+const alert = (id, action) => ({ type: "recall", alert: { id, recallId: "R", recallTitle: "t", hazard: "h", remedy: "r", url: "u", itemTitle: "i", itemKind: "owned", action, at } });
+const rc = [alert("x", "refund_claim_filed"), alert("y", "purchase_skipped"), alert("x", "replacement_bought")].reduce(applyEvent, init);
+assert.deepEqual(rc.recalls.map((a) => a.id + ":" + a.action), ["x:replacement_bought", "y:purchase_skipped"]);
+assert.equal(init.recalls.length, 0);
+
 // error
 assert.equal(applyEvent(init, { type: "error", message: "boom" }).error, "boom");
 

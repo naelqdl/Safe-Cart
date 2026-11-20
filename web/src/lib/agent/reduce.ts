@@ -6,7 +6,7 @@ const MAX_STEPS = 300;
 export function initialDashboardState(missions: Mission[]): DashboardState {
   return {
     missions: missions.map((m) => ({ ...m, status: "watching" })),
-    steps: [], events: [], approvals: [], approvalStates: {}, receipts: [], runs: [],
+    steps: [], events: [], approvals: [], approvalStates: {}, receipts: [], runs: [], recalls: [],
     checks: 0, ticking: false,
   };
 }
@@ -47,6 +47,8 @@ export function applyEvent(state: DashboardState, event: AgentEvent): DashboardS
       runs[i] = event.run;
       return { ...next, runs };
     }
+    case "recall":
+      return { ...next, recalls: [event.alert, ...state.recalls.filter((a) => a.id !== event.alert.id)] };
     case "error":
       return { ...next, error: event.message };
     case "done":

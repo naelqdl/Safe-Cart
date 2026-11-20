@@ -1,0 +1,10 @@
+flowchart LR
+  Browser["web :3000 (Next.js dashboard)"] -->|"/api/* proxy"| Server["server :8000 (agent loop)"]
+  Browser -.->|"browser events"| Amp[Amplitude]
+  Server --> S2[SingleStore]
+  Server --> Senso[Senso]
+  Server --> SIE[Superlinked SIE]
+  Server --> Statsig[Statsig]
+  Server --> Stripe["Stripe (TEST mode)"]
+  Server --> CPSC["CPSC recall API"]
+  Server --> Merchant["merchant :3100 (simulated store)"]
