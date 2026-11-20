@@ -1,11 +1,12 @@
 // SafeCart recall gate on Senso (S-H3.2, owner hz). cc calls this in tick step 5 before every buy.
-// Claim checked: "The <brand> <model> is not subject to any active product recall."
+// Claim checked: "The <brand> <model> sold in our store is not subject to any active product recall."
 //   conflict      → the KB holds a recall notice for it → RECALLED
 //   verified      → the KB affirmatively says it is not recalled (rare)
 //   unsupported / not_verifiable → Senso has no notice; not proof of safety by itself (combine with CPSC)
-// Author mode: 'organization' by default. In 'ai_assistant' mode Senso only checks claims tied to our
-// org, so a claim about a third-party brand comes back not_verifiable. Confirm with
-// `npx tsx senso-gate.smoke.ts` once real recalls are seeded; override with SENSO_GATE_AUTHOR.
+// Why "sold in our store": Senso's hackathon guide says claims about another company come back
+// not_verifiable, and ai_assistant mode only checks claims about our organization and its products.
+// Framing the item as our store's product keeps the claim checkable. Author 'organization' by default;
+// confirm with `npx tsx senso-gate.smoke.ts` once recalls are seeded; override with SENSO_GATE_AUTHOR.
 import { loadEnv } from './_lib.ts';
 import { factCheck, type Claim, type Passage, type Verdict } from './senso.ts';
 
@@ -18,7 +19,8 @@ export function rollupVerdict(claims: Claim[]): Verdict {
   return 'not_verifiable';
 }
 
-export const recallClaim = (brand: string, model: string) => `The ${[brand, model].map((s) => s.trim()).filter(Boolean).join(' ')} is not subject to any active product recall.`;
+export const recallClaim = (brand: string, model: string) =>
+  `The ${[brand, model].map((s) => s.trim()).filter(Boolean).join(' ')} sold in our store is not subject to any active product recall.`;
 
 export interface RecallFactCheck {
   verdict: Verdict | 'gated';
@@ -36,7 +38,7 @@ export async function recallFactCheck(brand: string, model: string, o: { author?
   loadEnv();
   const author = o.author ?? (process.env.SENSO_GATE_AUTHOR === 'ai_assistant' ? 'ai_assistant' : 'organization');
   const claim = recallClaim(brand, model);
-  const r = await factCheck(claim, `Is the ${brand} ${model} safe to buy, or is it recalled?`, { author });
+  const r = await factCheck(claim, `Is the ${brand} ${model} your store sells safe to buy, or is it under a recall?`, { author });
   const verdict = r.status === 'gated' ? 'gated' : rollupVerdict(r.claims);
   const top = r.claims.find((c) => c.verdict === verdict) ?? r.claims[0];
   return {
