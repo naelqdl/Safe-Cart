@@ -47,6 +47,27 @@ async function chat(message: string): Promise<ChatReply> {
   const m = message.toLowerCase();
   if (/\b(check|scan|run)\b.*\bnow\b|^check now/.test(m)) return { reply: 'Checking your wishlist and everything you own now.', actions: [{ type: 'check_now' }] };
   if (/autopilot (on|off)|(turn|switch) (on|off) autopilot/.test(m)) { const on = /\bon\b/.test(m); return { reply: `Autopilot ${on ? 'on' : 'off'}.`, actions: [{ type: 'set_autopilot', on }] }; }
+  // "add a car seat to my wishlist", "watch a baby monitor under $70": find it in the store, add it to the wishlist.
+  // shortcut: in-memory only (seed.wishlist, cleared by /demo/reset); not written to SingleStore.
+  const wishQ = /^(?:please\s+)?(?:add|watch|track)\s+(.+?)(?:\s+(?:under|below|for|at|max)\s*\$?(\d+(?:\.\d+)?))?[.!]?$/.exec(m.replace(/\s+(?:to|on)\s+(?:my\s+)?wish\s?list\b/, ''));
+  if (wishQ) {
+    const what = wishQ[1].replace(/^(?:an?|the|some)\s+/, '');
+    const words = what.split(/\s+/).filter((w) => w.length > 2 && !['the', 'some', 'new'].includes(w));
+    const hits = seed.catalog
+      .filter((c) => words.length > 0 && words.every((w) => `${c.title} ${c.brand} ${c.category.replace(/_/g, ' ')}`.toLowerCase().includes(w)))
+      // the item's own category first ("car seat" → the seat, not a car-seat shade), then cheapest
+      .sort((a, b) => Number(words.every((w) => b.category.includes(w))) - Number(words.every((w) => a.category.includes(w))) || a.price - b.price);
+    if (!hits.length) return { reply: `I couldn't find "${what}" in the store, so I didn't add it.`, actions: [] };
+    const item = hits[0];
+    if (seed.wishlist.some((w) => w.sku === item.sku)) return { reply: `${item.title} is already on your wishlist.`, actions: [] };
+    const p = await getPolicy();
+    const target = wishQ[2] ? Number(wishQ[2]) : Math.round(item.listPrice * (100 - p.minDiscountPct)) / 100;
+    seed.wishlist.push({ id: `w${seed.wishlist.length + 1}_${item.sku}`, sku: item.sku, title: item.title, targetPrice: target, priority: seed.wishlist.length + 1 });
+    return {
+      reply: `Added ${item.title} to your wishlist. Now $${item.price.toFixed(2)}; I'll buy it at $${target.toFixed(2)} or less${wishQ[2] ? '' : ` (${p.minDiscountPct}% off list)`}, after a recall check. Checking it now.`,
+      actions: [{ type: 'check_now' }],
+    };
+  }
   const safeQ = /(is|are) (my |the )?(.+?) (safe|recalled)\??$/.exec(m);
   if (safeQ) {
     const q = safeQ[3];
@@ -62,7 +83,7 @@ async function chat(message: string): Promise<ChatReply> {
       : s.check.status === 'clear' ? `✅ No active recall found for ${hit.title} (model ${hit.model}).` : `I couldn't reach any safety source for ${hit.title}, so I won't call it safe.`;
     return { reply: `${head}\nChecked:\n${cites}`, actions: [] };
   }
-  const canned = 'I watch your wishlist for sales, check every purchase against CPSC recalls first, and protect what you already own. Try "is my high chair safe?" or "check now".';
+  const canned = 'I watch your wishlist for sales, check every purchase against CPSC recalls first, and protect what you already own. Try "add a car seat to my wishlist", "is my high chair safe?" or "check now".';
   const p = await getPolicy();
   const context = {
     shopper: seed.user.name, preferences: seed.user.preferences,

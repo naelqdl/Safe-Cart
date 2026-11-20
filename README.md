@@ -40,6 +40,12 @@ Maya Chen, a new parent in Oakland. She is fictional, seeded for the demo.
 - **Audit trail:** every step, skip, claim and purchase is listed with its reason and cited sources. Runs show which claims are trusted (CPSC, Senso) and which come from untrusted listing text.
 - **Injection guard:** listing text is untrusted; hidden instructions in it are flagged and dropped.
 
+## Where Maya's data comes from
+
+**Today:** Maya's preferences, wishlist and owned items come from seed files (`data/user.json`, `data/wishlist.json`, `data/owned.json`; the owned items match the demo order emails in `data/inbox/`). Purchases are the agent's own. In the chat you can add store items to the wishlist ("add a car seat to my wishlist", "watch a baby monitor under $70").
+
+**Planned, not built: screen-aware memory.** SafeCart is meant to run as a desktop companion that, with the user's permission, reads what is on screen while they shop: items they add to a wishlist or cart on any store, order confirmations (what they bought), and products they look at often. It would store these in the agent's memory and show them on the dashboard, so the wishlist and owned items fill themselves instead of being typed in. Nothing in the current app captures or reads the screen.
+
 ## Architecture
 
 ```mermaid
@@ -193,7 +199,7 @@ Maximized, it shows the full dashboard with the chat docked on the right. Un-max
 
 ## Chat
 
-Talk to the agent in the chat panel: "watch AirPods under $150", "pause", "resume", "approve", "decline", "check now", "what did you buy?", "why?", "status". With `AGENT_BACKEND_URL` set, chat is forwarded to `<url>/chat`; otherwise a rule-based mock answers (`web/src/lib/agent/chat-mock.ts`).
+Talk to the agent in the chat panel: "add a car seat to my wishlist", "watch a baby monitor under $70", "pause", "resume", "approve", "decline", "check now", "what did you buy?", "why?", "status". With `AGENT_BACKEND_URL` set, chat is forwarded to `<url>/chat`, where "add/watch <item> [under $N]" finds the item in the store and adds it to the wishlist (target: your price, or the minimum discount off list); it lasts until **Reset demo**. Otherwise a rule-based mock answers (`web/src/lib/agent/chat-mock.ts`).
 
 ## Checks
 
