@@ -1,11 +1,29 @@
 // Mock agent: deterministic scripted checks that emit the same events a real backend would.
 // Triggers: a mission title containing "fail" → error event during its check; "decline" → its purchase fails.
+import type { Run } from "./trail";
 import type { ActionRequest, ActionResult, AgentEvent, AuditStep, Candidate, TickRequest } from "./types";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const delay = () => sleep(250 + Math.floor(Math.random() * 201));
 const now = () => new Date().toISOString();
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+// Minimal K-trail Run for one auto-purchase; only the price claim is modelled.
+const KIND = { search: "retrieve", fetch: "retrieve", plan: "decide", compare: "verify", decide: "decide", act: "act" } as const;
+const STEP_STATUS = { running: "ok", ok: "ok", warn: "warn", fail: "error" } as const;
+function mockRun(ref: string, goal: string, maxUsd: number, price: number, steps: AuditStep[]): Run {
+  return {
+    id: "run-" + ref, status: "done", startedAt: steps[0].at, endedAt: now(),
+    mandate: { goal, maxUsd, constraints: [] },
+    steps: steps.map((s) => ({ id: s.id, t: s.at, kind: KIND[s.kind], title: s.title, status: STEP_STATUS[s.status], detail: s.detail })),
+    claims: [{
+      id: "c1", text: `Price $${price} from Mock catalog`, trust: "merchant", verdict: "verified", loadBearing: true,
+      stepId: steps[0].id, sources: [{ label: "Mock catalog" }],
+    }],
+    action: { kind: "payment", mode: "simulated", ref, amountUsd: price, status: "succeeded" },
+    cost: { usd: 0, tokens: 0, byModel: {} },
+  };
+}
 
 export async function* runMockTick(req: TickRequest): AsyncGenerator<AgentEvent> {
   const { tick, missions, guardrails, spentToday } = req;
@@ -20,10 +38,12 @@ export async function* runMockTick(req: TickRequest): AsyncGenerator<AgentEvent>
   const m = missions[tick % missions.length];
   const money = new Intl.NumberFormat("en-US", { style: "currency", currency: m.currency });
   const fmt = (n: number) => money.format(n);
-  const step = (name: string, s: Omit<AuditStep, "id" | "at" | "missionId">): AgentEvent => ({
-    type: "step",
-    step: { id: `t${tick}-${name}`, at: now(), missionId: m.id, ...s },
-  });
+  const steps: AuditStep[] = []; // the tick's steps, reused to build the K-trail Run
+  const step = (name: string, s: Omit<AuditStep, "id" | "at" | "missionId">): AgentEvent => {
+    const st = { id: `t${tick}-${name}`, at: now(), missionId: m.id, ...s };
+    steps.push(st);
+    return { type: "step", step: st };
+  };
   const lower = m.title.toLowerCase();
 
   await delay();
@@ -87,6 +107,7 @@ export async function* runMockTick(req: TickRequest): AsyncGenerator<AgentEvent>
       yield step("act", {
         kind: "act", status: "ok", title: `Bought for ${fmt(price)} — ${reference}`, sources: [{ label: "Mock checkout" }],
       });
+      yield { type: "run", run: mockRun(reference, m.title, m.maxPrice, price, steps) };
       await delay();
       yield {
         type: "receipt",

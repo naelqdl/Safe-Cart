@@ -1,0 +1,261 @@
+{
+  "id": "run-happy",
+  "status": "done",
+  "startedAt": "2026-11-20T19:00:00Z",
+  "endedAt": "2026-11-20T19:00:24.000Z",
+  "mandate": {
+    "goal": "Spend only at-risk FSA dollars on verified-eligible items we'd use anyway",
+    "maxUsd": 167,
+    "constraints": [
+      "only at-risk dollars (balance minus carryover)",
+      "only verified-eligible items",
+      "ship to profile address"
+    ],
+    "deadline": "2026-12-31T00:00:00Z",
+    "verifiedBy": "senso.evals"
+  },
+  "fsa": {
+    "balanceUsd": 847,
+    "carryoverUsd": 680,
+    "atRiskUsd": 167,
+    "spentUsd": 166.4,
+    "leftUsd": 0.6,
+    "planDocVersion": "SPD v1"
+  },
+  "steps": [
+    {
+      "id": "s1",
+      "t": "2026-11-20T19:00:00.000Z",
+      "kind": "retrieve",
+      "title": "Read balance email and plan document (SPD v1)",
+      "tool": "senso.search",
+      "latencyMs": 910,
+      "costUsd": 0.0006,
+      "status": "ok"
+    },
+    {
+      "id": "s2",
+      "t": "2026-11-20T19:00:03.000Z",
+      "kind": "policy",
+      "title": "At-risk math: $847 balance - $680 carryover (SPD v1) = $167 at risk",
+      "tool": "policy.fsa_math",
+      "latencyMs": 14,
+      "costUsd": 0,
+      "status": "ok",
+      "detail": "The agent refuses to spend the other $680"
+    },
+    {
+      "id": "s3",
+      "t": "2026-11-20T19:00:06.000Z",
+      "kind": "retrieve",
+      "title": "Listed 9 candidates from the pharmacy sandbox",
+      "tool": "mock.pharmacy.catalog",
+      "latencyMs": 840,
+      "costUsd": 0.0004,
+      "status": "ok",
+      "detail": "Merchant pages are untrusted"
+    },
+    {
+      "id": "s4",
+      "t": "2026-11-20T19:00:09.000Z",
+      "kind": "extract",
+      "title": "Quarantined read of 9 listings into product facts",
+      "model": "claude-haiku-4-5",
+      "latencyMs": 1480,
+      "costUsd": 0.0034,
+      "status": "ok"
+    },
+    {
+      "id": "s5",
+      "t": "2026-11-20T19:00:13.000Z",
+      "kind": "verify",
+      "title": "Fact-checked 6 eligibility claims against Senso and registries",
+      "tool": "senso.evals",
+      "latencyMs": 2330,
+      "costUsd": 0.0068,
+      "status": "warn",
+      "flags": [
+        "conflict"
+      ],
+      "detail": "Multivitamin badged \"FSA eligible\" conflicts with DSLD and Pub 502; removed"
+    },
+    {
+      "id": "s6",
+      "t": "2026-11-20T19:00:17.000Z",
+      "kind": "decide",
+      "title": "Built a 5-item basket for $166.40",
+      "model": "claude-sonnet-5-5",
+      "latencyMs": 1960,
+      "costUsd": 0.0191,
+      "status": "ok"
+    },
+    {
+      "id": "s7",
+      "t": "2026-11-20T19:00:20.000Z",
+      "kind": "policy",
+      "title": "Checked mandate: $166.40 is within the $167 at-risk cap",
+      "tool": "policy.mandate",
+      "latencyMs": 11,
+      "costUsd": 0,
+      "status": "ok"
+    },
+    {
+      "id": "s8",
+      "t": "2026-11-20T19:00:24.000Z",
+      "kind": "act",
+      "title": "Test-mode payment succeeded",
+      "tool": "stripe.paymentIntents.create",
+      "latencyMs": 690,
+      "costUsd": 0.0002,
+      "status": "ok",
+      "detail": "Stripe TEST mode: no real money moved"
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "$167 of the balance is at risk of forfeiture",
+      "trust": "trusted",
+      "verdict": "verified",
+      "loadBearing": true,
+      "stepId": "s2",
+      "sources": [
+        {
+          "label": "Mock plan document SPD v1",
+          "snippet": "Carryover up to $680 into the next plan year",
+          "senso": {
+            "contentId": "mock_cnt_spd1",
+            "versionId": "mock_ver_spd1",
+            "score": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "text": "Ibuprofen 200 ct is FSA eligible (OTC medicine)",
+      "trust": "trusted",
+      "verdict": "verified",
+      "loadBearing": true,
+      "stepId": "s5",
+      "sources": [
+        {
+          "label": "CARES Act OTC rule (excerpt)",
+          "snippet": "OTC medicines and menstrual care products are eligible without a prescription",
+          "senso": {
+            "contentId": "mock_cnt_cares",
+            "versionId": "mock_ver_cares",
+            "score": 0.9
+          }
+        },
+        {
+          "label": "openFDA NDC registry",
+          "snippet": "Product listed as OTC drug, active ingredient ibuprofen"
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "text": "Sunscreen SPF 50 is FSA eligible",
+      "trust": "trusted",
+      "verdict": "verified",
+      "loadBearing": true,
+      "stepId": "s5",
+      "sources": [
+        {
+          "label": "IRS Pub 502 (excerpt)",
+          "snippet": "Sunscreen with SPF 15 or higher is eligible",
+          "senso": {
+            "contentId": "mock_cnt_p502b",
+            "versionId": "mock_ver_p502b",
+            "score": 0.9
+          }
+        },
+        {
+          "label": "openFDA NDC registry",
+          "snippet": "Product listed as OTC drug, sunscreen"
+        }
+      ]
+    },
+    {
+      "id": "c4",
+      "text": "Daily multivitamin is \"FSA eligible\"",
+      "trust": "untrusted",
+      "verdict": "conflict",
+      "loadBearing": true,
+      "stepId": "s5",
+      "sources": [
+        {
+          "label": "Mock Pharmacy badge",
+          "snippet": "FSA eligible!"
+        },
+        {
+          "label": "NIH DSLD registry",
+          "snippet": "Product type: dietary supplement (multivitamin)"
+        },
+        {
+          "label": "IRS Pub 502 (excerpt)",
+          "url": "https://example.com/mock/irs-pub-502",
+          "snippet": "Vitamins taken for general health are not medical care",
+          "senso": {
+            "contentId": "mock_cnt_p502",
+            "versionId": "mock_ver_p502",
+            "score": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "c5",
+      "text": "The household already buys allergy relief",
+      "trust": "inferred",
+      "verdict": "unsupported",
+      "loadBearing": false,
+      "stepId": "s3",
+      "sources": []
+    },
+    {
+      "id": "c6",
+      "text": "Spend only at-risk dollars",
+      "trust": "user",
+      "verdict": "not_verifiable",
+      "loadBearing": true,
+      "stepId": "s2",
+      "sources": [
+        {
+          "label": "User mandate",
+          "snippet": "Spend only at-risk dollars on verified-eligible items"
+        }
+      ]
+    }
+  ],
+  "decision": {
+    "chosen": "Basket of 5 verified-eligible items, $166.40",
+    "rationale": "Lands within $0.60 of zero left without exceeding the $167 at-risk cap; every item has a trusted-source eligibility proof.",
+    "alternatives": [
+      {
+        "name": "Daily multivitamin, $19.00",
+        "whyNot": "CONFLICT: DSLD lists it as a supplement and Pub 502 excludes it; the store badge is untrusted"
+      },
+      {
+        "name": "Spend the full $847 balance",
+        "whyNot": "$680 carries over under SPD v1; spending it is unnecessary"
+      }
+    ]
+  },
+  "action": {
+    "kind": "payment",
+    "mode": "test",
+    "ref": "pi_test_3MockFsa166",
+    "amountUsd": 166.4,
+    "status": "succeeded"
+  },
+  "cost": {
+    "usd": 0.0305,
+    "tokens": 6420,
+    "byModel": {
+      "claude-haiku-4-5": 0.0034,
+      "claude-sonnet-5-5": 0.0191
+    }
+  }
+}

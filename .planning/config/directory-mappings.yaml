@@ -1,0 +1,57 @@
+generated: "2026-11-20"
+source: "CODEBASE.md"
+version: "1.0"
+mappings:
+  routes:
+    paths: ["web/src/app/api"]
+    priority: 10
+    pattern: "**/route.ts"
+    description: "Next.js API route handlers"
+  pages:
+    paths: ["web/src/app"]
+    priority: 9
+    pattern: "**/page.tsx"
+    description: "App Router pages"
+  components:
+    paths: ["web/src/components"]
+    priority: 10
+    pattern: "*.tsx"
+    description: "Feature panels"
+  ui:
+    paths: ["web/src/components/ui"]
+    priority: 10
+    pattern: "*.tsx"
+    description: "shadcn/ui primitives"
+  hooks:
+    paths: ["web/src/hooks"]
+    priority: 10
+    pattern: "use-*.ts"
+    description: "React hooks"
+  agent:
+    paths: ["web/src/lib/agent"]
+    priority: 10
+    pattern: "*.ts"
+    description: "Agent contracts, mock agent, reducer"
+  config:
+    paths: ["web/src/config"]
+    priority: 10
+    pattern: "*.config.ts"
+    description: "App config"
+  mock_data:
+    paths: ["web/src/mock"]
+    priority: 5
+    pattern: "*.json"
+    description: "Demo fixtures"
+  tests:
+    paths: ["web/src/lib/agent", "web/scripts"]
+    priority: 5
+    pattern: "*.check.mjs"
+    description: "Self-checks and smoke"
+  desktop:
+    paths: ["web/electron"]
+    priority: 5
+    pattern: "*.cjs"
+    description: "Electron shell"
+rules:
+  strictness: warn
+  exceptions: []
