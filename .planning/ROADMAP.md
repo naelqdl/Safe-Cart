@@ -3,7 +3,7 @@
 ## Progress
 | Phase | Name | Status | Plans | Completed |
 |-------|------|--------|-------|-----------|
-| 1 | UI Skeleton | In progress | 4 | 3 |
+| 1 | UI Skeleton | Complete | 4 | 4 |
 | 2 | Idea lock-in + real agent backend | Pending | 0 | 0 |
 | 3 | Demo polish, sponsors, pitch | Pending | 0 | 0 |
 
