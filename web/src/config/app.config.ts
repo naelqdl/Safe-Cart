@@ -16,6 +16,8 @@ export const appConfig = {
   currency: "USD",
   // Seconds between proactive checks while Autopilot is on
   checkIntervalSeconds: 12,
+  // Seed the Runs panel with the two K-trail demo runs (happy path + injection attack); set false once a backend emits real runs
+  showDemoRuns: true,
   // What the agent may do without asking
   guardrails: { autoBuyLimit: 50, dailyBudget: 300 } as Guardrails,
   // Starting missions the agent watches (users can add more on the dashboard).

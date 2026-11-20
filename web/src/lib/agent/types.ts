@@ -1,6 +1,8 @@
 // UI ↔ agent contract. The backend emits AgentEvents as NDJSON (one JSON object per line).
 // Additive changes only once a backend is connected.
 
+import type { Run } from "./trail";
+
 export type StepKind = "plan" | "search" | "fetch" | "compare" | "decide" | "act";
 export type StepStatus = "running" | "ok" | "warn" | "fail";
 export interface SourceRef { label: string; url?: string }
@@ -38,6 +40,7 @@ export type AgentEvent =
   | { type: "mission"; missionId: string; status: MissionStatus; note?: string }
   | { type: "approval"; approval: Approval }          // add to the approvals inbox
   | { type: "receipt"; receipt: Receipt }             // the agent executed a purchase
+  | { type: "run"; run: Run }                         // K-trail Run; upsert by run.id
   | { type: "error"; message: string }
   | { type: "done" };
 
@@ -76,6 +79,7 @@ export interface DashboardState {
   approvals: Approval[];
   approvalStates: Record<string, ApprovalUiState>;
   receipts: Receipt[];
+  runs: Run[];          // newest last
   checks: number;       // ticks completed
   ticking: boolean;
   lastTickAt?: string;

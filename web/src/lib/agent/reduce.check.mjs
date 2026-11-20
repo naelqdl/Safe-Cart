@@ -44,6 +44,11 @@ assert.ok(s.missions[0].lastChecked);
 // every event appended in order
 assert.deepEqual(s.events, events);
 
+// run upsert by id, newest last
+const run = (status) => ({ type: "run", run: { id: "r1", status, steps: [], claims: [] } });
+const r1 = [run("running"), run("done"), { type: "run", run: { id: "r2" } }].reduce(applyEvent, init);
+assert.deepEqual(r1.runs.map((r) => r.id + r.status), ["r1done", "r2undefined"]);
+
 // error
 assert.equal(applyEvent(init, { type: "error", message: "boom" }).error, "boom");
 

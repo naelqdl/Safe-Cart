@@ -1,0 +1,430 @@
+{
+  "metadata": {
+    "map_schema_version": "2.0",
+    "generated_at": "2026-11-20T20:10:58Z",
+    "analyzed_commit": "722dd20bfc7be8ca764ceef63698683cfe5bccdb",
+    "source_file_count": 47,
+    "source_fingerprint": "sha1:25ab5c32ac99389b",
+    "source_fingerprint_kind": "hash",
+    "scope": "project-root",
+    "working_tree": "dirty (T05 K-trail run view uncommitted)"
+  },
+  "entry_points": [
+    {
+      "name": "Page",
+      "path": "web/src/app/page.tsx",
+      "kind": "next-page",
+      "summary": "Home → Dashboard",
+      "related_chunks": [
+        "map:web-src-app-page-tsx:001"
+      ]
+    },
+    {
+      "name": "electron",
+      "path": "web/electron/main.cjs",
+      "kind": "desktop",
+      "summary": "npm run desktop",
+      "related_chunks": [
+        "map:web-electron-main-cjs:001"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "name": "POST /api/agent/tick",
+      "path": "web/src/app/api/agent/tick/route.ts",
+      "kind": "route",
+      "summary": "POST /api/agent/tick: validates TickRequest, proxies to AGENT_BACKEND_URL/tick or streams the mock agent as NDJSON.",
+      "related_chunks": [
+        "map:web-src-app-api-agent-tick-route-ts:001"
+      ]
+    },
+    {
+      "name": "POST /api/action",
+      "path": "web/src/app/api/action/route.ts",
+      "kind": "route",
+      "summary": "POST /api/action: approve a pending purchase; proxies to AGENT_BACKEND_URL/action or runs runMockAction.",
+      "related_chunks": [
+        "map:web-src-app-api-action-route-ts:001"
+      ]
+    },
+    {
+      "name": "POST /api/chat",
+      "path": "web/src/app/api/chat/route.ts",
+      "kind": "route",
+      "summary": "POST /api/chat: chat message plus dashboard context; proxies to backend /chat or runMockChat (returns reply + actions like add_mission).",
+      "related_chunks": [
+        "map:web-src-app-api-chat-route-ts:001"
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "AGENT_BACKEND_URL contract",
+      "path": "README.md",
+      "kind": "upstream",
+      "summary": "POST /tick (NDJSON AgentEvents), /action (ActionResult), /chat",
+      "related_chunks": [
+        "map:readme:001"
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "name": "useAutopilot",
+      "path": "web/src/hooks/use-autopilot.ts",
+      "kind": "module",
+      "summary": "Client autopilot loop: every checkIntervalSeconds POSTs /api/agent/tick, applies NDJSON events, approve/decline via /api/action, addMission.",
+      "related_chunks": [
+        "map:web-src-hooks-use-autopilot-ts:001"
+      ]
+    },
+    {
+      "name": "useChat",
+      "path": "web/src/hooks/use-chat.ts",
+      "kind": "module",
+      "summary": "Chat state; posts /api/chat and applies returned actions to autopilot.",
+      "related_chunks": [
+        "map:web-src-hooks-use-chat-ts:001"
+      ]
+    },
+    {
+      "name": "useMedia",
+      "path": "web/src/hooks/use-compact.ts",
+      "kind": "module",
+      "summary": "Media-query hooks.",
+      "related_chunks": [
+        "map:web-src-hooks-use-compact-ts:001"
+      ]
+    },
+    {
+      "name": "AgentEvent",
+      "path": "web/src/lib/agent/types.ts",
+      "kind": "module",
+      "summary": "Wire types: AgentEvent union, TickRequest, Mission, Guardrails, Approval, Receipt, Chat*, DashboardState, AutopilotApi.",
+      "related_chunks": [
+        "map:web-src-lib-agent-types-ts:001"
+      ]
+    },
+    {
+      "name": "Run",
+      "path": "web/src/lib/agent/trail.ts",
+      "kind": "module",
+      "summary": "K-trail v0 contract (owner cc): Run, Step, Claim, Decision, Action, Trust, Verdict; fsa panel field for D1.",
+      "related_chunks": [
+        "map:web-src-lib-agent-trail-ts:001"
+      ]
+    },
+    {
+      "name": "applyEvent",
+      "path": "web/src/lib/agent/reduce.ts",
+      "kind": "module",
+      "summary": "Pure reducer applying AgentEvents to DashboardState.",
+      "related_chunks": [
+        "map:web-src-lib-agent-reduce-ts:001"
+      ]
+    },
+    {
+      "name": "runMockTick",
+      "path": "web/src/lib/agent/mock.ts",
+      "kind": "module",
+      "summary": "Deterministic mock agent: runMockTick generator (search, compare, auto-buy or approval, builds a K-trail Run) and runMockAction. Triggers: \"fail\", \"decline\".",
+      "related_chunks": [
+        "map:web-src-lib-agent-mock-ts:001"
+      ]
+    },
+    {
+      "name": "runMockChat",
+      "path": "web/src/lib/agent/chat-mock.ts",
+      "kind": "module",
+      "summary": "Mock chat intents (watch X under $Y → add_mission).",
+      "related_chunks": [
+        "map:web-src-lib-agent-chat-mock-ts:001"
+      ]
+    },
+    {
+      "name": "readNdjson",
+      "path": "web/src/lib/agent/ndjson.ts",
+      "kind": "module",
+      "summary": "Streams NDJSON response lines into AgentEvent callback.",
+      "related_chunks": [
+        "map:web-src-lib-agent-ndjson-ts:001"
+      ]
+    },
+    {
+      "name": "formatPrice",
+      "path": "web/src/lib/format.ts",
+      "kind": "module",
+      "summary": "formatPrice / formatTime helpers.",
+      "related_chunks": [
+        "map:web-src-lib-format-ts:001"
+      ]
+    },
+    {
+      "name": "RootLayout",
+      "path": "web/src/app/layout.tsx",
+      "kind": "component",
+      "summary": "Root layout: fonts, metadata from appConfig.",
+      "related_chunks": [
+        "map:web-src-app-layout-tsx:001"
+      ]
+    },
+    {
+      "name": "Page",
+      "path": "web/src/app/page.tsx",
+      "kind": "component",
+      "summary": "Home page; renders Dashboard.",
+      "related_chunks": [
+        "map:web-src-app-page-tsx:001"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "path": "web/src/components/dashboard.tsx",
+      "kind": "component",
+      "summary": "Main screen: header, stat tiles, missions, runs, audit trail, approvals, receipts, docked chat; compact view under 720px.",
+      "related_chunks": [
+        "map:web-src-components-dashboard-tsx:001"
+      ]
+    },
+    {
+      "name": "AppHeader",
+      "path": "web/src/components/app-header.tsx",
+      "kind": "component",
+      "summary": "Header with app name and the Autopilot switch, countdown and Check now.",
+      "related_chunks": [
+        "map:web-src-components-app-header-tsx:001"
+      ]
+    },
+    {
+      "name": "ApprovalsPanel",
+      "path": "web/src/components/approvals-panel.tsx",
+      "kind": "component",
+      "summary": "Approval inbox for purchases above the auto-buy limit; approve/decline.",
+      "related_chunks": [
+        "map:web-src-components-approvals-panel-tsx:001"
+      ]
+    },
+    {
+      "name": "AuditTrail",
+      "path": "web/src/components/audit-trail.tsx",
+      "kind": "component",
+      "summary": "Activity/audit trail of AuditSteps with JSON export.",
+      "related_chunks": [
+        "map:web-src-components-audit-trail-tsx:001"
+      ]
+    },
+    {
+      "name": "ChatPanel",
+      "path": "web/src/components/chat-panel.tsx",
+      "kind": "component",
+      "summary": "Chat UI with inline approval cards.",
+      "related_chunks": [
+        "map:web-src-components-chat-panel-tsx:001"
+      ]
+    },
+    {
+      "name": "CompactView",
+      "path": "web/src/components/compact-view.tsx",
+      "kind": "component",
+      "summary": "Mobile/compact Electron layout.",
+      "related_chunks": [
+        "map:web-src-components-compact-view-tsx:001"
+      ]
+    },
+    {
+      "name": "MissionsPanel",
+      "path": "web/src/components/missions-panel.tsx",
+      "kind": "component",
+      "summary": "Watched missions (wishlist-like) list plus add form.",
+      "related_chunks": [
+        "map:web-src-components-missions-panel-tsx:001"
+      ]
+    },
+    {
+      "name": "ReceiptsPanel",
+      "path": "web/src/components/receipts-panel.tsx",
+      "kind": "component",
+      "summary": "Receipts for completed purchases.",
+      "related_chunks": [
+        "map:web-src-components-receipts-panel-tsx:001"
+      ]
+    },
+    {
+      "name": "RunView",
+      "path": "web/src/components/run-view.tsx",
+      "kind": "component",
+      "summary": "K-trail Run renderer: timeline, claims with trust/verdict, decision card, receipt, injection banner.",
+      "related_chunks": [
+        "map:web-src-components-run-view-tsx:001"
+      ]
+    },
+    {
+      "name": "RunsPanel",
+      "path": "web/src/components/runs-panel.tsx",
+      "kind": "component",
+      "summary": "List of K-trail Runs opening RunView.",
+      "related_chunks": [
+        "map:web-src-components-runs-panel-tsx:001"
+      ]
+    },
+    {
+      "name": "StatTiles",
+      "path": "web/src/components/stat-tiles.tsx",
+      "kind": "component",
+      "summary": "KPI tiles: spent today, auto-buys, approvals, missions.",
+      "related_chunks": [
+        "map:web-src-components-stat-tiles-tsx:001"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "name": "reduce.check.mjs",
+      "path": "web/src/lib/agent/reduce.check.mjs",
+      "kind": "test",
+      "summary": "Assert-based self-check for reduce.ts (npm run check:agent).",
+      "related_chunks": [
+        "map:web-src-lib-agent-reduce-check-mjs:001"
+      ]
+    },
+    {
+      "name": "smoke.sh",
+      "path": "web/scripts/smoke.sh",
+      "kind": "test",
+      "summary": "HTTP smoke test of tick/action/chat routes and home page against a running server.",
+      "related_chunks": [
+        "map:web-scripts-smoke-sh:001"
+      ]
+    }
+  ],
+  "config": [
+    {
+      "name": "globals.css",
+      "path": "web/src/app/globals.css",
+      "kind": "config",
+      "summary": "Tailwind v4 theme tokens (--primary etc.) for light/dark.",
+      "related_chunks": [
+        "map:web-src-app-globals-css:001"
+      ]
+    },
+    {
+      "name": "appConfig",
+      "path": "web/src/config/app.config.ts",
+      "kind": "config",
+      "summary": "Re-skin point: name, tagline, guardrails (autoBuyLimit, dailyBudget), seed missions, sponsors, showDemoRuns.",
+      "related_chunks": [
+        "map:web-src-config-app-config-ts:001"
+      ]
+    },
+    {
+      "name": "AGENT_BACKEND_URL",
+      "path": "web/.env.example",
+      "kind": "env",
+      "summary": "Optional backend base URL; empty = mock",
+      "related_chunks": []
+    },
+    {
+      "name": "DESKTOP_PORT/DESKTOP_URL/DESKTOP_TEST_COMPACT",
+      "path": "web/electron/main.cjs",
+      "kind": "env",
+      "summary": "Electron shell settings",
+      "related_chunks": []
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "next",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "16.4.6",
+      "related_chunks": []
+    },
+    {
+      "name": "react",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "19.3.0",
+      "related_chunks": []
+    },
+    {
+      "name": "@base-ui/react",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "^1.9.0",
+      "related_chunks": []
+    },
+    {
+      "name": "tailwindcss",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "4.3.3",
+      "related_chunks": []
+    },
+    {
+      "name": "lucide-react",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "^1.77.0",
+      "related_chunks": []
+    },
+    {
+      "name": "electron",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "45.4.1",
+      "related_chunks": []
+    },
+    {
+      "name": "typescript",
+      "path": "web/package.json",
+      "kind": "npm",
+      "summary": "^5",
+      "related_chunks": []
+    }
+  ],
+  "ownership": [
+    {
+      "name": "web/** (nc, T05/T10)",
+      "path": "web/",
+      "kind": "ownership",
+      "summary": "UI, mock agent, Next routes; team agent nc (Nael)",
+      "related_chunks": []
+    },
+    {
+      "name": "server/** (cc, T04)",
+      "path": "server/",
+      "kind": "ownership",
+      "summary": "Real agent backend (not in this repo yet)",
+      "related_chunks": []
+    },
+    {
+      "name": "merchant/** (ag, T06)",
+      "path": "merchant/",
+      "kind": "ownership",
+      "summary": "Adversarial merchant sandbox (not in this repo yet)",
+      "related_chunks": []
+    }
+  ],
+  "risk_areas": [
+    {
+      "name": "Two event contracts",
+      "path": "web/src/lib/agent/types.ts",
+      "kind": "risk",
+      "summary": "AgentEvent (dashboard) and K-trail Run (trail.ts) coexist; mock bridges them",
+      "related_chunks": [
+        "map:web-src-lib-agent-types-ts:001",
+        "map:web-src-lib-agent-trail-ts:001"
+      ]
+    },
+    {
+      "name": "Client-only autopilot",
+      "path": "web/src/hooks/use-autopilot.ts",
+      "kind": "risk",
+      "summary": "Loop runs in the browser tab; state lost on reload",
+      "related_chunks": [
+        "map:web-src-hooks-use-autopilot-ts:001"
+      ]
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import { ChatPanel } from "@/components/chat-panel";
 import { CompactView } from "@/components/compact-view";
 import { AuditTrail } from "@/components/audit-trail";
 import { MissionsPanel } from "@/components/missions-panel";
+import { RunsPanel } from "@/components/runs-panel";
 import { ReceiptsPanel } from "@/components/receipts-panel";
 import { StatTiles } from "@/components/stat-tiles";
 import { appConfig } from "@/config/app.config";
@@ -51,7 +52,10 @@ export function Dashboard() {
         {/* Below lg the column-3 wrapper is display:contents so items stack: approvals, missions, audit, receipts */}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           <div className="order-2 lg:order-1">
-            <MissionsPanel missions={state.missions} onAdd={api.addMission} />
+            <div className="flex flex-col gap-6">
+              <MissionsPanel missions={state.missions} onAdd={api.addMission} />
+              <RunsPanel runs={state.runs} />
+            </div>
           </div>
           <div className="order-3 lg:order-2">
             <AuditTrail
