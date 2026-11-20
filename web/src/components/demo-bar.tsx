@@ -9,7 +9,7 @@ import { appConfig } from "@/config/app.config";
 import type { Profile } from "@/lib/agent/types";
 import { formatPrice } from "@/lib/format";
 
-type DemoAction = "sale" | "recall" | "guard" | "reset";
+type DemoAction = "sale" | "recall" | "guard" | "inject" | "reset";
 
 // Stage controls: each button POSTs /api/demo/<action>, then runs a check so the effect shows at once.
 export function DemoBar({ profile, onApplied }: { profile: Profile | null; onApplied(): void }) {
@@ -41,6 +41,9 @@ export function DemoBar({ profile, onApplied }: { profile: Profile | null; onApp
       </Button>
       <Button size="sm" variant="outline" disabled={!!busy} onClick={() => send("recall", { recallId })}>
         Publish recall
+      </Button>
+      <Button size="sm" variant="outline" disabled={!!busy} onClick={() => send("inject", {})}>
+        Plant injected listing
       </Button>
       <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => send("reset", {})}>
         Reset demo

@@ -6,6 +6,7 @@ export interface MockDemo {
   sale?: { sku: string; pct: number; ticked: boolean }; // ticked: the next tick already checked the sale item
   recall?: { recallId: string; handled: boolean };      // handled: the owned-items sweep already ran
   guardOff?: boolean;                                   // naive agent: recall guard OFF
+  inject?: { ticked: boolean };                         // next tick reads a white-noise listing with a hidden instruction
 }
 // globalThis so every route bundle in the same server process sees one demo state.
 const g = globalThis as { __safecartDemo?: MockDemo };

@@ -57,6 +57,8 @@ flowchart LR
   Server --> Merchant["merchant :3100 (simulated store)"]
 ```
 
+Rendered: docs/architecture.svg (editable: docs/architecture.excalidraw)
+
 With `AGENT_BACKEND_URL` unset, the web app's API routes answer from a built-in mock instead of :8000.
 
 ## One tick

@@ -10,6 +10,7 @@
     "lint": "eslint",
     "check:agent": "node src/lib/agent/reduce.check.mjs",
     "smoke": "bash scripts/smoke.sh",
+    "golden": "bash scripts/golden-path.sh",
     "desktop": "electron ."
   },
   "dependencies": {

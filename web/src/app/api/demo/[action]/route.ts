@@ -2,7 +2,7 @@ import { mockDemo, resetMockDemo } from "@/lib/agent/profile-mock";
 
 // POST /api/demo/sale {sku, pct} | /api/demo/recall {recallId} | /api/demo/guard {on} | /api/demo/reset {}
 // Forwards to AGENT_BACKEND_URL/demo/<action>, or flips the mock's demo state so the next tick shows the effect.
-const ACTIONS = ["sale", "recall", "guard", "reset"] as const;
+const ACTIONS = ["sale", "recall", "guard", "inject", "reset"] as const;
 type Action = (typeof ACTIONS)[number];
 const isText = (v: unknown): v is string => typeof v === "string" && v.trim() !== "";
 
@@ -36,6 +36,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ action:
   const upstream = process.env.AGENT_BACKEND_URL;
   if (upstream && action === "guard")
     return Response.json({ error: "Recall guard is the Statsig gate recall_guard on the real backend; flip it in the Statsig console" }, { status: 409 });
+  if (upstream && action === "inject")
+    return Response.json({ error: "On the real backend the injected listing is the merchant's trap item; put that item on sale instead" }, { status: 409 });
   if (upstream) {
     try {
       const r = await fetch(`${upstream}/demo/${action}`, {
@@ -50,6 +52,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ action:
   const demo = mockDemo();
   if (action === "sale") demo.sale = { sku: body.sku as string, pct: body.pct as number, ticked: false };
   else if (action === "guard") demo.guardOff = !body.on;
+  else if (action === "inject") demo.inject = { ticked: false };
   else if (action === "recall") demo.recall = { recallId: body.recallId as string, handled: false };
   else resetMockDemo();
   return Response.json({ ok: true });
