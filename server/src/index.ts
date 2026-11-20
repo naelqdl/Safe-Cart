@@ -9,6 +9,7 @@ import { checkSafety } from './safety.ts';
 import { act, tick } from './tick.ts';
 import { resetState, state } from './state.ts';
 import { Recorder } from './trail.ts';
+import { answerChat } from './llm.ts';
 import type { AgentEvent, ChatReply, Profile } from './wire.ts';
 
 const PORT = Number(process.env.PORT ?? 8000);
@@ -59,7 +60,19 @@ async function chat(message: string): Promise<ChatReply> {
       : s.check.status === 'clear' ? `✅ No active recall found for ${hit.title} (model ${hit.model}).` : `I couldn't reach any safety source for ${hit.title}, so I won't call it safe.`;
     return { reply: `${head}\nChecked:\n${cites}`, actions: [] };
   }
-  return { reply: 'I watch your wishlist for sales, check every purchase against CPSC recalls first, and protect what you already own. Try "is my high chair safe?" or "check now".', actions: [] };
+  const canned = 'I watch your wishlist for sales, check every purchase against CPSC recalls first, and protect what you already own. Try "is my high chair safe?" or "check now".';
+  const p = await getPolicy();
+  const context = {
+    shopper: seed.user.name, preferences: seed.user.preferences,
+    policy: { autoBuyLimit: p.autoBuyLimit, minDiscountPct: p.minDiscountPct, recallGuard: p.recallGuard },
+    wishlist: seed.wishlist.map((w) => ({ title: w.title ?? w.sku, targetPrice: w.targetPrice, safety: state.safety.get(w.sku)?.status })),
+    owned: seed.owned.map((o) => ({ title: o.title, model: o.model, purchasedAt: o.purchasedAt, safety: state.safety.get(o.id)?.status, recallId: state.safety.get(o.id)?.recallId })),
+    recentReceipts: [...state.bought.values()].slice(-5).map((r) => ({ title: r.title, amount: r.amount, at: r.at, auto: r.auto, safety: r.safety?.status, ref: r.reference })),
+    recallAlerts: [...state.alerts.values()].slice(-5).map((a) => ({ item: a.itemTitle, recallId: a.recallId, action: a.action, replacement: a.replacementTitle, claimRef: a.claimRef })),
+    decisions: [...state.runs.values()].filter((r) => r.decision).slice(-5).map((r) => ({ chosen: r.decision!.chosen, why: r.decision!.rationale })),
+  };
+  const w = await answerChat(message, context, canned);
+  return { reply: w.text, actions: [] };
 }
 
 const server = createServer(async (req, res) => {

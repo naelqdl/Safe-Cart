@@ -12,7 +12,7 @@ const DASH_KIND: Record<TrailKind, AuditStep['kind']> = {
 const DASH_STATUS: Record<Step['status'], AuditStep['status']> = { ok: 'ok', warn: 'warn', blocked: 'warn', error: 'fail' };
 
 export interface StepOpts {
-  tool?: string; model?: string; latencyMs?: number; status?: Step['status']; flags?: Step['flags'];
+  tool?: string; model?: string; latencyMs?: number; costUsd?: number; tokens?: number; status?: Step['status']; flags?: Step['flags'];
   detail?: string; sources?: SourceRef[];
 }
 
@@ -41,8 +41,14 @@ export class Recorder {
 
   private settle(id: string, at: string, kind: TrailKind, title: string, o: StepOpts): string {
     const status = o.status ?? 'ok';
-    const s: Step = { id, t: at, kind, title, status, tool: o.tool, model: o.model, latencyMs: o.latencyMs, flags: o.flags, detail: o.detail };
+    const s: Step = { id, t: at, kind, title, status, tool: o.tool, model: o.model, latencyMs: o.latencyMs, costUsd: o.costUsd, flags: o.flags, detail: o.detail };
     this.run.steps.push(s);
+    if (o.costUsd || o.tokens) {
+      const c = this.run.cost, m = o.model ?? 'unknown';
+      c.usd = Math.round((c.usd + (o.costUsd ?? 0)) * 1e6) / 1e6;
+      c.tokens += o.tokens ?? 0;
+      c.byModel[m] = Math.round(((c.byModel[m] ?? 0) + (o.costUsd ?? 0)) * 1e6) / 1e6;
+    }
     this.emit({ type: 'step', step: { id, at, kind: DASH_KIND[kind], title, detail: o.detail, sources: o.sources, status: DASH_STATUS[status], missionId: this.missionId } });
     void store.logLedger({ at, runId: this.run.id, stepId: id, kind, title, status, tool: o.tool, latencyMs: o.latencyMs, detail: o.detail });
     return id;
