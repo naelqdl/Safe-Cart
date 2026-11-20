@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { appConfig } from "@/config/app.config";
 import { readNdjson } from "@/lib/agent/ndjson";
 import { applyEvent, initialDashboardState } from "@/lib/agent/reduce";
+import { demoRuns } from "@/lib/agent/trail-demo";
 import type { ActionResult, AgentEvent, AutopilotApi, DashboardState, TickRequest } from "@/lib/agent/types";
 
 const STORAGE_KEY = "autopilot";
@@ -24,7 +25,10 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 }
 
 export function useAutopilot(): AutopilotApi {
-  const [state, setState] = useState<DashboardState>(() => initialDashboardState(appConfig.missions));
+  const [state, setState] = useState<DashboardState>(() => ({
+    ...initialDashboardState(appConfig.missions),
+    runs: appConfig.showDemoRuns ? demoRuns : [],
+  }));
   const enabled = useSyncExternalStore(subscribe, readEnabled, serverEnabled);
   const [secondsToNextCheck, setSeconds] = useState(INTERVAL);
   const stateRef = useRef(state);
