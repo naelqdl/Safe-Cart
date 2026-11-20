@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeCart Autopilot</title>
-  <link rel="stylesheet" href="styles.css?v=9">
-  <link rel="stylesheet" href="graph-zones.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="graph-zones.css?v=12">
 </head>
 <body>
   <header class="top">
@@ -30,6 +30,13 @@
     <section class="stage" id="stage">
       <!-- ===== Autopilot: pipeline map ===== -->
       <div class="view home" data-view="autopilot">
+        <section class="home2">
+          <div class="h-sum"><b id="hBig">0</b><span id="hSub">items protected</span><button class="h-check" id="hCheck">Check now</button></div>
+          <article class="h-card" id="hCard"></article>
+          <div class="h-sec"><span>Closest to target</span><button class="h-link" data-go="missions">All missions ›</button></div>
+          <div class="h-rows" id="hRows"></div>
+          <div class="h-say" id="hSay" hidden></div>
+        </section>
         <section class="hero">
           <div class="overlay" id="overlay">
             <div class="eyebrow" id="ovEyebrow">Standing by</div>
@@ -39,17 +46,17 @@
           </div>
         </section>
         <section class="flowmap" id="flowmap">
-          <button class="fnode ends" data-f="watch"><span class="fic"><i data-ic="heart" data-s="22"></i></span><b>Maya's lists</b><small data-m="watch">Wishlist + owned</small></button>
+          <button class="fnode ends" data-f="watch"><span class="fic"><i data-ic="heart" data-s="22"></i></span><b>Watch</b><small data-m="watch">Wishlist + owned</small></button>
           <span class="fline"></span>
-          <button class="fnode stagebox" data-k="perceive" data-f="perceive"><span class="fic"><i data-ic="scan-eye" data-s="22"></i></span><b>Perceive</b><small data-m="perceive">Prices + listings</small></button>
+          <button class="fnode stagebox" data-k="perceive" data-f="perceive"><span class="fic"><i data-ic="scan-eye" data-s="22"></i></span><b>Listing</b><small data-m="perceive">Prices + listings</small></button>
           <span class="fline"></span>
-          <button class="fnode stagebox" data-k="verify" data-f="verify"><span class="fic"><i data-ic="shield-check" data-s="22"></i></span><b>Verify</b><small data-m="verify">CPSC · Senso · table</small></button>
+          <button class="fnode stagebox" data-k="verify" data-f="verify"><span class="fic"><i data-ic="shield-check" data-s="22"></i></span><b>Recall check</b><small data-m="verify">CPSC · Senso · table</small></button>
           <span class="fline"></span>
           <button class="fnode stagebox" data-k="decide" data-f="decide"><span class="fic"><i data-ic="scale" data-s="22"></i></span><b>Decide</b><small data-m="decide">Fixed policy rules</small></button>
           <span class="fline"></span>
-          <button class="fnode stagebox" data-k="act" data-f="act"><span class="fic"><i data-ic="credit-card" data-s="22"></i></span><b>Act</b><small data-m="act">Stripe TEST · refunds</small></button>
+          <button class="fnode stagebox" data-k="act" data-f="act"><span class="fic"><i data-ic="credit-card" data-s="22"></i></span><b>Pay</b><small data-m="act">Stripe TEST · refunds</small></button>
           <span class="fline"></span>
-          <button class="fnode ends" data-f="safe"><span class="fic"><i data-ic="shield" data-s="22"></i></span><b>Maya protected</b><small data-m="safe">0 recalls caught</small></button>
+          <button class="fnode ends" data-f="safe"><span class="fic"><i data-ic="shield" data-s="22"></i></span><b>Done</b><small data-m="safe">0 recalls caught</small></button>
         </section>
         <p class="fhint" id="fhint">Tap a step for details.</p>
         <section class="fdetail" id="fdetail" hidden>
@@ -168,12 +175,12 @@
   <div class="sheet-bg" id="sheetBg"></div>
   <aside class="sheet" id="sheet" aria-label="Audit trail"></aside>
 
-  <script src="vendor/3d-force-graph.min.js?v=9"></script>
-  <script src="icons.js?v=9"></script>
-  <script src="app.js?v=9"></script>
-  <script src="graph.js?v=9"></script>
-  <script src="pages.js?v=9"></script>
-  <script src="compact.js?v=9"></script>
-  <script src="landing.js?v=9"></script>
+  <script src="vendor/3d-force-graph.min.js?v=12"></script>
+  <script src="icons.js?v=12"></script>
+  <script src="app.js?v=12"></script>
+  <script src="graph.js?v=12"></script>
+  <script src="pages.js?v=12"></script>
+  <script src="compact.js?v=12"></script>
+  <script src="landing.js?v=12"></script>
 </body>
 </html>

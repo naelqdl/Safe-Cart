@@ -757,3 +757,50 @@ body, .view.home, .view.graph, .top, .chat { background: var(--bg); }
 #pgRecalls .pg-card:hover p { -webkit-line-clamp: unset; }
 .pg-card { padding: 18px 20px; gap: 10px; }
 .pg { gap: 18px; }
+
+/* ================= v8 home (Flighty card · tracker bar · price rows · one explanation) ================= */
+.view.home { padding: 32px 40px 24px; gap: 16px; }
+.view.home .hero, .view.home .fhint, .view.home .powered { display: none !important; }
+.home2 { width: 100%; max-width: 980px; display: grid; gap: 14px; }
+.h-sum { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.h-sum b { font: 600 40px/1 var(--text); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.h-sum span { font-size: 14px; color: var(--muted); } .h-sum span .ok { color: var(--ok); } .h-sum span .bad { color: var(--bad); }
+.h-check { margin-left: auto; height: 34px; padding: 0 14px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line-2); color: var(--ink); font-size: 13.5px; font-weight: 500; }
+.h-check:hover { background: var(--s2); }
+.h-card { --k: var(--ok); border-radius: 12px; padding: 22px 24px 20px; background: var(--s1); box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; position: relative; }
+.h-card.run { --k: var(--accent); } .h-card.warn { --k: var(--warn); } .h-card.bad { --k: var(--bad); } .h-card.handled { --k: #2dd4bf; }
+.h-card.bad { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bad) 45%, transparent); }
+.h-item { font-size: 13.5px; color: var(--muted); }
+.h-head { font: 600 28px/1.2 var(--text); letter-spacing: -.02em; color: var(--k); font-variant-numeric: tabular-nums; }
+.h-card.run .h-head::after { content: ''; display: inline-block; width: 8px; height: 8px; margin-left: 10px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: hpulse 1s ease-in-out infinite; }
+@keyframes hpulse { 50% { opacity: .25; } }
+.h-why { font-size: 14px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.h-why .tick { color: var(--ok); }
+.h-act { margin-top: 10px; }
+/* tracker bar (pizza tracker): one word per step, done = solid, current = shimmer */
+.view.home .flowmap { max-width: 980px; margin: -4px 0 4px; gap: 4px; }
+.view.home .fnode, .view.home .fnode:hover, .view.home .fnode.active, .view.home .fnode.done, .view.home .fnode.bad, .view.home .fnode.sel { border-top-width: 6px !important; border-radius: 0 !important; padding: 8px 0 0 !important; }
+.view.home .fnode b { font: 500 12.5px var(--text); color: var(--muted); } .view.home .fnode b::before { content: none; }
+.view.home .fnode.done b { color: var(--ink-2); } .view.home .fnode.active b { color: var(--accent); font-weight: 600; } .view.home .fnode.bad b { color: var(--bad); font-weight: 600; }
+.view.home .fnode small { display: none; }
+.view.home .fnode.done { border-top-color: var(--ok) !important; }
+.view.home .fnode.active { border-image: linear-gradient(90deg, var(--accent), #b9d6ff, var(--accent)) 1; }
+.h-sec { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; font: 500 13.5px var(--text); color: var(--ink-2); }
+.h-link { font-size: 13px; color: var(--accent); }
+.h-rows { border-radius: 12px; background: var(--s1); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.h-row { width: 100%; display: grid; grid-template-columns: 40px minmax(0, 1fr) 120px; gap: 14px; align-items: center; padding: 12px 18px; text-align: left; border-bottom: 1px solid var(--line); transition: background .15s; }
+.h-row:last-child { border-bottom: 0; } .h-row:hover { background: var(--s2); }
+.h-glyph { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--s3); font: 600 16px var(--text); color: var(--ink-2); }
+.h-rt { min-width: 0; display: grid; gap: 4px; } .h-rt b { font: 500 14.5px var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.h-rt small { font-size: 12.5px; color: var(--muted); } .h-rt small.ok { color: var(--ok); } .h-rt small.bad { color: var(--bad); } .h-rt small.warn { color: var(--warn); }
+.h-rt .pbar { margin-top: 2px; max-width: 360px; }
+.h-pr { text-align: right; font-variant-numeric: tabular-nums; } .h-pr b { display: block; font: 600 16px var(--text); } .h-pr small { font-size: 12px; color: var(--muted); }
+.h-say { border-radius: 12px; padding: 16px 20px; background: var(--s1); box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; }
+.h-say-h { display: flex; gap: 10px; align-items: baseline; } .h-say-h b { font-size: 13.5px; } .h-say-h span { font-size: 12px; color: var(--muted); }
+.h-say p { font-size: 14.5px; color: var(--ink-2); line-height: 1.55; }
+.h-say .h-link { justify-self: start; }
+.view.home .fdetail { max-width: 980px; }
+@media (prefers-reduced-motion: reduce) { .h-card.run .h-head::after { animation: none; } }
+/* panel rows: keep the price inside the panel */
+.panel .row { width: 100%; } .panel .row .txt { flex: 1; min-width: 0; } .panel .row .price { flex: none; padding-right: 2px; }
+.panel { overflow-x: hidden; }

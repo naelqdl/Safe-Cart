@@ -108,3 +108,70 @@
   SC.on(() => { clearTimeout(t); t = setTimeout(metrics, 120); });
   setTimeout(metrics, 600);
 })();
+
+// ---------- Home (research pass): summary line · one status card · tracker bar · closest-to-target rows · one explanation ----------
+(() => {
+  const { S, esc, money } = window.SC;
+  const $ = (id) => document.getElementById(id);
+  let lastCheck = 0;
+  const ago = (t) => { if (!t) return 'not yet'; const s = Math.round((Date.now() - t) / 1000); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
+  const latest = (arr) => [...arr].sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+  function card() {
+    const recall = latest([...S.recalls.values()]);
+    const receipt = S.receipts.at(-1);
+    const appr = [...S.approvals.values()][0];
+    const step = S.steps.at(-1);
+    const srcs = (receipt?.safety?.sources ?? []).map((x) => x.label.replace(/\s*\(.*\)$/, ''));
+    let k = 'ok', item = '', head = 'All clear', why = 'Nothing needs Maya right now. SafeCart checks every price against U.S. recalls before it buys.', btn = '';
+    if (S.busy) { k = 'run'; item = 'Working now'; head = 'Checking…'; why = esc(step?.title ?? 'Reading prices and listings'); }
+    else if (appr) { k = 'warn'; item = esc(appr.candidate.title); head = `Needs your OK · ${money(appr.candidate.price)}`; why = esc(appr.reason); btn = '<button class="btn" data-go="approvals">Review</button>'; }
+    else if (recall && (!receipt || Date.parse(recall.at) >= Date.parse(receipt.at) - 4000)) {
+      const handled = !!(recall.claimRef || recall.replacementTitle || recall.action === 'purchase_skipped');
+      k = handled ? 'handled' : 'bad'; item = esc(recall.itemTitle);
+      head = !handled ? 'Stop using this item' : recall.itemKind === 'owned' ? 'We caught a recall and took care of it' : 'We skipped a recalled deal';
+      why = `CPSC ${esc(recall.recallId)} · ${recall.claimRef ? `refund filed (${esc(recall.claimRef)})` : 'not bought'}${recall.replacementTitle ? ` · replaced with ${esc(recall.replacementTitle)}` : ''}`;
+      btn = recall.claimRef ? '<button class="btn" data-go="refunds">View claim</button>' : '<button class="btn" data-go="recalls">Details</button>';
+    } else if (receipt) {
+      k = 'ok'; item = esc(receipt.title); head = `Bought · ${money(receipt.amount)}`;
+      why = srcs.length ? srcs.map((x) => `<span class="tick">✓ ${esc(x)}</span>`).join('') : 'No safety check (naive mode)';
+      btn = '<button class="btn ghost" data-run-last>Audit trail</button>';
+    }
+    $('hCard').className = `h-card ${k}`;
+    $('hCard').innerHTML = `<div class="h-item">${item}</div><div class="h-head">${head}</div><div class="h-why">${why}</div>${btn ? `<div class="h-act">${btn}</div>` : ''}`;
+    // the tracker bar lives right under the card
+    const fm = $('flowmap'); if (fm && fm.previousElementSibling !== $('hCard')) $('hCard').after(fm);
+  }
+  function summary() {
+    const p = S.profile; if (!p) return;
+    const owned = [...S.recalls.values()].filter((a) => a.itemKind === 'owned').length;
+    $('hBig').textContent = $('nProtected')?.textContent ?? '0';
+    $('hSub').innerHTML = `items protected · watching ${p.wishlist.length} · <span class="${owned ? 'bad' : 'ok'}">${owned ? `${owned} recall on things Maya owns` : 'no recalls on things Maya owns'}</span> · checked ${ago(lastCheck)}`;
+  }
+  function rows() {
+    const p = S.profile; if (!p) return;
+    const bought = new Map(S.receipts.map((r) => [r.missionId, r]));
+    const list = [...p.wishlist].sort((a, b) => a.price / a.targetPrice - b.price / b.targetPrice).slice(0, 4);
+    $('hRows').innerHTML = list.map((w) => {
+      const b = bought.get(w.id); const rc = w.safety?.status === 'recalled';
+      const st = b ? ['ok', `Bought · ${money(b.amount)}`] : rc ? ['bad', 'Recalled · won’t buy'] : w.price <= w.targetPrice ? ['ok', 'Target hit'] : w.onSale ? ['warn', `${money(w.price - w.targetPrice)} away`] : ['idle', 'Watching'];
+      const max = Math.max(w.listPrice, w.price, w.targetPrice) * 1.04; const pc = (v) => (v / max * 100).toFixed(1);
+      return `<button class="h-row" data-go="missions"><span class="h-glyph">${esc(w.title.trim()[0])}</span><span class="h-rt"><b>${esc(w.title)}</b><small class="${st[0]}">${st[1]}</small><span class="pbar ${w.price <= w.targetPrice ? 'hit' : ''}"><i style="width:${pc(w.price)}%"></i><b style="left:${pc(w.targetPrice)}%"></b></span></span><span class="h-pr"><b>${money(w.price)}</b><small>target ${money(w.targetPrice)}</small></span></button>`;
+    }).join('');
+  }
+  function say() {
+    const r = [...S.runs].reverse().find((x) => x.decision?.rationale);
+    const el = $('hSay'); if (!r) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = `<div class="h-say-h"><b>SafeCart</b><span>explained by Claude</span></div><p>${esc(r.decision.rationale)}</p><button class="h-link" data-ask="Why did you ${r.action ? 'buy' : 'decide on'} ${esc(r.decision.chosen ?? 'that')}?">Ask why ›</button>`;
+  }
+  function render() { summary(); card(); rows(); say(); }
+  document.querySelector('.home2').addEventListener('click', (e) => {
+    const g = e.target.closest('[data-go]'); if (g) return SC.setPage(g.dataset.go);
+    if (e.target.closest('[data-run-last]')) return SC.openRun(S.runs.length - 1);
+    const a = e.target.closest('[data-ask]'); if (a) { $('chat').classList.add('open'); $('chatInput').value = a.dataset.ask; $('chatForm').requestSubmit(); }
+  });
+  $('hCheck').onclick = () => SC.check();
+  SC.on((type) => { if (type === 'tickdone') lastCheck = Date.now(); clearTimeout(render.t); render.t = setTimeout(render, 60); });
+  setInterval(summary, 1000);
+  setTimeout(render, 700);
+})();
