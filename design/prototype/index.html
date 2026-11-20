@@ -34,46 +34,68 @@
       <!-- ===== Autopilot: live sensor view ===== -->
       <div class="view sensor" data-view="autopilot">
         <div class="radar"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="sweep"></div></div>
-        <div class="overlay" id="overlay">
-          <div class="eyebrow" id="ovEyebrow">Standing by</div>
-          <h2 id="ovTitle">Protecting what Maya buys, and what she owns.</h2>
-          <div id="ovExtra"></div>
-          <ul id="ovList">
-            <li>Every purchase is checked against U.S. CPSC recalls first</li>
-            <li>Owned items are re-checked when a new recall is published</li>
-            <li>Payments are capped by a Stripe spending token</li>
-          </ul>
+        <div class="s-left">
+          <div class="overlay" id="overlay">
+            <div class="eyebrow" id="ovEyebrow">Standing by</div>
+            <h2 id="ovTitle">Protecting what Maya buys, and what she owns.</h2>
+            <div id="ovExtra"></div>
+            <ul id="ovList">
+              <li>Every purchase is checked against U.S. CPSC recalls first</li>
+              <li>Owned items are re-checked when a new recall is published</li>
+              <li>Payments are capped by a Stripe spending token</li>
+            </ul>
+          </div>
+          <div class="target" id="target" hidden><span class="tag" id="tgTag">READING LISTING</span><div class="name" id="tgName"></div><div class="meta" id="tgMeta"></div></div>
         </div>
-        <div class="target" id="target" hidden><span class="tag" id="tgTag">READING LISTING</span><div class="name" id="tgName"></div><div class="meta" id="tgMeta"></div></div>
-        <div class="feed" id="feed"></div>
-        <div class="pipeline">
-          <div class="stagebox" data-k="perceive"><div class="k">01 PERCEIVE</div><div class="v">Read prices and listings (untrusted)</div></div>
-          <div class="stagebox" data-k="verify"><div class="k">02 VERIFY</div><div class="v">CPSC recalls · Senso · recall table</div></div>
-          <div class="stagebox" data-k="decide"><div class="k">03 DECIDE</div><div class="v">Fixed policy rules, explained by Claude</div></div>
-          <div class="stagebox" data-k="act"><div class="k">04 ACT</div><div class="v">Stripe TEST payment, capped</div></div>
-        </div>
-        <div class="carousel" id="carousel" hidden>
-          <button class="arrow" id="prev" aria-label="Previous run">‹</button>
-          <div class="dots" id="dots"></div>
-          <button class="arrow" id="next" aria-label="Next run">›</button>
+        <div class="s-right"><div class="feed" id="feed"></div></div>
+        <div class="s-bottom">
+          <div class="pipeline">
+            <div class="stagebox" data-k="perceive"><div class="k">01 PERCEIVE</div><div class="v">Read prices and listings (untrusted)</div></div>
+            <div class="stagebox" data-k="verify"><div class="k">02 VERIFY</div><div class="v">CPSC recalls · Senso · recall table</div></div>
+            <div class="stagebox" data-k="decide"><div class="k">03 DECIDE</div><div class="v">Fixed policy rules, explained by Claude</div></div>
+            <div class="stagebox" data-k="act"><div class="k">04 ACT</div><div class="v">Stripe TEST payment, capped</div></div>
+          </div>
+          <div class="carousel" id="carousel" hidden>
+            <button class="arrow" id="prev" aria-label="Previous run">‹</button>
+            <div class="dots" id="dots"></div>
+            <button class="arrow" id="next" aria-label="Next run">›</button>
+          </div>
         </div>
       </div>
 
       <!-- ===== Graph: trust graph ===== -->
       <div class="view graph" data-view="graph" hidden>
         <div id="graph"></div>
+        <div class="glabels" id="glabels"></div>
         <div class="legend">
-          <h3>Trust graph</h3>
-          <p>Everything SafeCart knows about Maya, every source it checked before spending, and every refund it asked for. Grows live while the agent works. Dashed = sample (real CPSC recall, made-up order).</p>
-          <div class="keys">
-            <span><i style="background:#262a31"></i>Maya</span><span><i style="background:#8a9fb5"></i>Wishlist</span>
-            <span><i style="background:#a7aeb7"></i>Owned</span><span><i style="background:#cf4a4a"></i>Recall</span>
-            <span><i style="background:#3a9a6e"></i>Purchase</span><span><i style="background:#5f84a8"></i>Refund request</span><span><i style="background:#fff;box-shadow:inset 0 0 0 2px #5f84a8"></i>Source</span>
+          <h3>Trust web</h3>
+          <p>Everything SafeCart knows about Maya, every source it checked before spending, and every refund it asked for. Drag to orbit, scroll to zoom, drag a node to pin it, click to fly in. Tap a key to hide that layer.</p>
+          <div class="keys" id="gkeys">
+            <button data-type="user"><i style="background:#ffffff;color:#ffffff"></i>Maya</button>
+            <button data-type="wish"><i style="background:#9fb9da;color:#9fb9da"></i>Wishlist</button>
+            <button data-type="owned"><i style="background:#c8ced6;color:#c8ced6"></i>Owned</button>
+            <button data-type="recall"><i style="background:#ff6262;color:#ff6262"></i>Recall</button>
+            <button data-type="buy"><i style="background:#4fd39c;color:#4fd39c"></i>Purchase</button>
+            <button data-type="claim"><i style="background:#8db4e2;color:#8db4e2"></i>Refund</button>
+            <button data-type="src"><i style="background:#f2b552;color:#f2b552"></i>Source</button>
+            <button data-type="inj"><i style="background:#ff9f43;color:#ff9f43"></i>Injection</button>
           </div>
         </div>
         <div class="gstats" id="gstats"></div>
         <div class="gcard" id="gcard" hidden></div>
-        <div class="gtools"><button id="gFit">Fit</button><button id="gFlow" class="on">Flow</button><button id="gLabels" class="on">Labels</button></div>
+        <div class="gtools">
+          <button id="gSphere" class="on" title="Shells: Maya at the core, items, then recalls and refunds, sources outside">Sphere</button>
+          <button id="gWeb" title="Free force layout">Web</button>
+          <span class="sep"></span>
+          <label>Spread <input type="range" id="gSpread" min="50" max="200" value="100"></label>
+          <span class="sep"></span>
+          <button id="gSpin" class="on" title="Slow orbit">Orbit</button>
+          <button id="gFlow" class="on" title="Data flowing along checks and payments">Flow</button>
+          <button id="gLabels" class="on">Labels</button>
+          <button id="gBurst" title="Scatter and let it settle">Burst</button>
+          <button id="gRelease" title="Unpin dragged nodes">Unpin</button>
+          <button id="gFit">Fit</button>
+        </div>
       </div>
 
       <!-- ===== Content pages (ported from the team dashboard) ===== -->
@@ -134,7 +156,7 @@
   <div class="sheet-bg" id="sheetBg"></div>
   <aside class="sheet" id="sheet" aria-label="Audit trail"></aside>
 
-  <script src="vendor/force-graph.min.js"></script>
+  <script src="vendor/3d-force-graph.min.js"></script>
   <script src="app.js"></script>
   <script src="graph.js"></script>
   <script src="pages.js"></script>
