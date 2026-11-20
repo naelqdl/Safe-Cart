@@ -5,7 +5,7 @@ Typed sponsor clients per vault doc `K-integrations`. No agent logic: typed I/O,
 |---|---|---|
 | `senso.ts` | `ingestText`, `updateText`, `findDoc`, `searchContext`, `factCheck`, `whoAmI`, `creditBalance` | `SENSO_API_KEY` |
 | `stripe.ts` | `mintSpt`, `pay` (test mode only; live keys refused; idempotency key per payment) | `STRIPE_SECRET_KEY` |
-| `sie.ts` | `extract`, `rerank`, `guard`, `classify`, `warm`/`warmAll` (call at boot) | `SIE_API_KEY` |
+| `sie.ts` | `extract`, `rerank`, `guard`, `classify`, `detectInjection` (per-segment; use for listings), `warm`/`warmAll` (call at boot) | `SIE_API_KEY` |
 | `senso-gate.ts` | SafeCart: `recallFactCheck(brand, model)` (conflict = recalled; see seed/README.md) | `SENSO_API_KEY` |
 | `seed/seed-senso.ts` | SafeCart: real CPSC recalls + `data/kb` → Senso (`npm run seed:senso`) | `SENSO_API_KEY` |
 | `singlestore.ts` | SafeCart S-H1: `query`, `ping`, `getWishlist`, `getOwned`, `getProduct`, `getRecalls`, `matchOwnedToRecall`, `recallsForProduct`, `findAlternatives` (full-text v2 + filters), `recordPrice`, `setPrice`, `logLedger`, `getLedger`, `activateRecall`, `resetDemo`. Schema `sql/schema.sql`; seed `npm run seed:s2` | `S2_URL` |
