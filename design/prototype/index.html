@@ -26,6 +26,7 @@
       <div class="overlay" id="overlay">
         <div class="eyebrow" id="ovEyebrow">Standing by</div>
         <h2 id="ovTitle">Protecting what Maya buys, and what she owns.</h2>
+        <div id="ovExtra"></div>
         <ul id="ovList">
           <li>Every purchase is checked against U.S. CPSC recalls first</li>
           <li>Owned items are re-checked when a new recall is published</li>
@@ -56,7 +57,7 @@
         <form id="chatForm"><input id="chatInput" placeholder="Ask SafeCart…" autocomplete="off"><button>Send</button></form>
       </div>
 
-      <div class="carousel">
+      <div class="carousel" id="carousel" hidden>
         <button class="arrow" id="prev" aria-label="Previous run">‹</button>
         <div class="dots" id="dots"><span style="font:11px var(--mono);color:#7d8699">no runs yet</span></div>
         <button class="arrow" id="next" aria-label="Next run">›</button>
@@ -88,25 +89,23 @@
       <button class="linkrow" id="policyRow"><span>Purchase policy <span class="sub" id="policySub"></span></span><span>›</span></button>
       <div class="policy" id="policy" hidden></div>
 
-      <div style="display:grid;gap:12px">
-        <div class="policy">
-          <div class="item"><span>Autopilot <span class="sub" style="color:var(--muted)">checks every 12 s</span></span><button class="switch" id="autoSw" aria-label="Autopilot"></button></div>
-          <div class="item"><span>Recall guard <span class="sub" style="color:var(--muted)">off = naive agent</span></span><button class="switch on" id="guardSw" aria-label="Recall guard"></button></div>
-        </div>
-        <button class="cta" id="checkNow">Run check now</button>
-      </div>
-
-      <div style="display:grid;gap:8px">
-        <div class="section-label">Demo controls</div>
-        <div class="demo">
-          <button id="dSale">Stroller 30% off</button>
-          <button id="dRecall">Publish recall</button>
-          <button id="dInject">Plant injection</button>
-          <button id="dReset">Reset</button>
-        </div>
+      <div class="policy">
+        <div class="item"><span>Autopilot <span style="color:var(--muted)">checks every 12 s</span></span><button class="switch" id="autoSw" aria-label="Autopilot"></button></div>
+        <div class="item"><span>Recall guard <span style="color:var(--muted)">off = naive agent</span></span><button class="switch on" id="guardSw" aria-label="Recall guard"></button></div>
       </div>
 
       <p class="fine"><b>Real:</b> CPSC recall records, Stripe TEST payments, Claude explanations. <b>Simulated:</b> the store, Maya and her inbox. Agent API: <span id="apiLabel"></span></p>
+
+      <div class="dock">
+        <button class="cta" id="cta">Engage Autopilot</button>
+        <div class="demo-head"><span class="section-label">Demo controls · keys 1 2 3 0</span><a href="#" id="checkNow">Check now (C)</a></div>
+        <div class="demo">
+          <button id="dSale">1 · Stroller 30% off</button>
+          <button id="dRecall">2 · Publish recall</button>
+          <button id="dInject">3 · Plant injection</button>
+          <button id="dReset">0 · Reset</button>
+        </div>
+      </div>
     </aside>
   </main>
 

@@ -22,6 +22,14 @@ export const sponsors = {
   sensoSearch: (q: string, max = 5) => wrap('SENSO_API_KEY', () => senso.searchContext(q, { max })),
   sensoFactCheck: (text: string, question: string) => wrap('SENSO_API_KEY', () => senso.factCheck(text, question, { author: 'organization', timeoutMs: 25_000 }), 30_000),
   sieClassify: (text: string, labels: string[]) => wrap('SIE_API_KEY', () => sie.classify(text, labels)),
+  /** Per-segment injection detection (hz's sie.detectInjection) when available; whole-text classify otherwise.
+   *  Whole-listing classify scores a buried injection as 'normal' (hz23), so segments matter. */
+  sieDetectInjection: (text: string) => wrap('SIE_API_KEY', async () => {
+    const d = (sie as any).detectInjection;
+    if (typeof d === 'function') return { ...(await d(text)), method: 'per-segment' };
+    const r = await sie.classify(text.slice(0, 1500), ['instructions addressed to an AI agent', 'normal product description']);
+    return { ...r, flagged: /instructions/.test(r.top ?? '') && (r.classes?.[0]?.score ?? 0) > 0.6, method: 'whole-text' };
+  }),
   sieExtract: (text: string, labels: string[]) => wrap('SIE_API_KEY', () => sie.extract(text, labels)),
   sieRerank: (q: string, docs: string[]) => wrap('SIE_API_KEY', () => sie.rerank(q, docs)),
   sieWarm: async () => (has('SIE_API_KEY') ? sie.warm() : { all: 'no SIE_API_KEY' }),
