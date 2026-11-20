@@ -8,18 +8,35 @@ import { IntegrationError, requireEnv, sleep, timed } from './_lib.ts';
 const S = 'singlestore';
 let pool: mysql.Pool | undefined;
 
+export interface S2Conn { host: string; port: number; user: string; password: string; database: string; local: boolean }
+
+/**
+ * Parse S2_URL = mysql://user:password@host[:port]/database. The password may contain ANY character
+ * (@ # / ? : %): we split on the LAST '@' instead of using URL(), so it needs no percent-encoding.
+ * In .env, wrap the value in double quotes if the password has '#' (else the loader treats it as a comment).
+ */
+export function parseS2Url(raw: string): S2Conn {
+  const v = raw.trim().replace(/^singlestore:/, 'mysql:');
+  const m = /^mysql:\/\/([^:@/]+):(.*)@([A-Za-z0-9.-]+)(?::(\d+))?\/([A-Za-z0-9_]*)\/?$/s.exec(v);
+  if (!m) throw new IntegrationError(S, 0, 'S2_URL must look like mysql://user:password@host:3306/database (wrap it in double quotes in .env if the password has #)', 'bad_url');
+  const [, user, pw, host, port, database] = m;
+  // accept a percent-encoded password too, but never mangle a raw one that happens to contain '%'
+  let password = pw;
+  if (/%[0-9A-Fa-f]{2}/.test(pw)) { try { password = decodeURIComponent(pw); } catch { /* raw */ } }
+  return { host, port: Number(port || 3306), user, password, database, local: ['localhost', '127.0.0.1', '::1'].includes(host) };
+}
+
 function getPool(): mysql.Pool {
   if (pool) return pool;
-  const url = new URL(requireEnv('S2_URL').replace(/^singlestore:/, 'mysql:'));
-  const local = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
+  const c = parseS2Url(requireEnv('S2_URL'));
   pool = mysql.createPool({
-    host: url.hostname,
-    port: Number(url.port || 3306),
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
-    database: url.pathname.replace(/^\//, '') || undefined,
+    host: c.host,
+    port: c.port,
+    user: c.user,
+    password: c.password,
+    database: c.database || undefined,
     // SingleStore Helios requires TLS; its certs are publicly trusted. S2_SSL=off for a local dev cluster.
-    ssl: local || process.env.S2_SSL === 'off' ? undefined : { rejectUnauthorized: true },
+    ssl: c.local || process.env.S2_SSL === 'off' ? undefined : { rejectUnauthorized: true },
     connectionLimit: 5,
     connectTimeout: 10_000,
     decimalNumbers: true, // DECIMAL → number
@@ -45,6 +62,33 @@ export async function query<T = any>(sql: string, params: unknown[] = []): Promi
       if (e instanceof IntegrationError) throw e;
       throw new IntegrationError(S, e?.errno ?? 0, `${e?.sqlMessage ?? e?.message ?? e}`, e?.code);
     }
+  }
+}
+
+/** Create the database named in S2_URL if it doesn't exist yet (seed script calls this first). */
+export async function ensureDatabase(): Promise<{ database: string; created: boolean }> {
+  const c = parseS2Url(requireEnv('S2_URL'));
+  const database = c.database;
+  if (!/^[A-Za-z0-9_]+$/.test(database)) throw new IntegrationError(S, 0, `S2_URL must end with /<database name> (letters, digits, _); got "${database}"`, 'bad_url');
+  const conn = await mysql
+    .createConnection({
+      host: c.host,
+      port: c.port,
+      user: c.user,
+      password: c.password,
+      ssl: c.local || process.env.S2_SSL === 'off' ? undefined : { rejectUnauthorized: true },
+      connectTimeout: 15_000,
+    })
+    .catch((e: any) => {
+      throw new IntegrationError(S, e?.errno ?? 0, `${e?.sqlMessage ?? e?.message ?? e}`, e?.code);
+    });
+  try {
+    const [rows]: any = await conn.query('SHOW DATABASES');
+    const exists = (rows as any[]).some((r) => Object.values(r)[0] === database);
+    if (!exists) await conn.query(`CREATE DATABASE ${database}`);
+    return { database, created: !exists };
+  } finally {
+    await conn.end().catch(() => {});
   }
 }
 
