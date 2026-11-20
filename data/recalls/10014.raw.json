@@ -1,0 +1,98 @@
+{
+  "RecallID": 10014,
+  "RecallNumber": "24316",
+  "RecallDate": "2024-07-25T00:00:00",
+  "Description": "This recall involves Besrey Twins Strollers, Model BR-C708S. The strollers have gray and black fabric, black frames, black wheels, and canopies that can be in the up or down position. In some units the front grab bar is covered in black fabric printed with the name \"besrey\" in white text, and in other units the front grab bar is covered in light gray fabric. Model NO. BR-C708S, the date of manufacture, and the name \"STIGER, INC.\" can be found on a white label above the back right wheel. The model number listed on the instructional literature is BR-708S.",
+  "URL": "https://www.cpsc.gov/Recalls/2024/Stiger-Recalls-Besrey-Twins-Strollers-Due-to-Entrapment-Fall-and-Choking-Hazards-Violation-of-Federal-Regulation-for-Strollers-Sold-Exclusively-on-Amazon-com",
+  "Title": "Stiger Recalls Besrey Twins Strollers Due to Entrapment, Fall and Choking Hazards; Violation of Federal Regulation for Strollers; Sold Exclusively on Amazon.com ",
+  "ConsumerContact": "Besrey toll-free at 888-310-6255 from 9 a.m. to 5 p.m. ET Monday through Friday, email at support@besrey.com or stigerstg@outlook.com, or online at https://www.besrey.com/pages/product-recalls-safety-alertsor www.besrey.com and click \"Product Recalls\" at the bottom of the homepage for more information.",
+  "LastPublishDate": "2024-07-25T00:00:00",
+  "Products": [
+    {
+      "Name": "Besrey Twins Strollers",
+      "Description": "",
+      "Model": "",
+      "Type": "",
+      "CategoryID": "",
+      "NumberOfUnits": "About 3,045"
+    }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-1.png",
+      "Caption": "Recalled Besrey Twins Stroller in Gray and Black, Side View with Canopies Down"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-2.png",
+      "Caption": "Recalled Besrey Twins Stroller in Gray, Side View with Canopies Down"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-3.png",
+      "Caption": "Recalled Besrey Twins Stroller in Gray and Black, Side View with Canopies Up"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-4.png",
+      "Caption": "Recalled Besrey Twins Stroller in Gray and Black, Front View"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-5.png",
+      "Caption": "Recalled Besrey Twins Stroller in Gray, Front View"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-6.png",
+      "Caption": "Recalled Besrey Twins Stroller, Label Location"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-7.png",
+      "Caption": "Recalled Besrey Twins Stroller, Label Location"
+    },
+    {
+      "URL": "https://www.cpsc.gov/s3fs-public/Besrey-stroller-8.png",
+      "Caption": "Recalled Besrey Twins Stroller, Label With Date of Manufacture and Model Number"
+    }
+  ],
+  "Injuries": [
+    {
+      "Name": "None reported."
+    }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+    {
+      "Name": "Online Exclusively at Amazon.com from July 2018 through September 2023 for about $200.",
+      "CompanyID": ""
+    }
+  ],
+  "Importers": [
+    {
+      "Name": "Stiger Inc., of Diamond Bar, California",
+      "CompanyID": ""
+    }
+  ],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+    {
+      "Country": "China"
+    }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+    {
+      "Name": "The twin stroller violates multiple safety regulations for strollers. The front seat in the forward-facing configuration poses an entrapment hazard to children. In addition, failures with the restraint system and rear seat enclosure pose a fall hazard to children. In products with a black grab bar, the foam padding on the grab bar can pose a choking hazard if the child bites it.",
+      "HazardType": "",
+      "HazardTypeID": ""
+    }
+  ],
+  "Remedies": [
+    {
+      "Name": "Consumers should stop using the stroller immediately and contact Stiger for information on how to dispose of the product to obtain a full refund. Stiger and Amazon are contacting all known purchasers directly."
+    }
+  ],
+  "RemedyOptions": [
+    {
+      "Option": "Refund"
+    }
+  ]
+}

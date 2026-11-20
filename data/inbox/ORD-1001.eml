@@ -1,0 +1,19 @@
+From: orders@demobabystore.example
+To: maya.chen@example.com
+Subject: Your order ORD-1001 is confirmed
+Date: Fri, 14 Feb 2025 10:00:00 +0000
+Message-ID: <ORD-1001@demobabystore.example>
+Content-Type: text/plain; charset=utf-8
+
+Demo Baby Store (SIMULATED)
+Thank you for your order, Maya!
+
+Order: ORD-1001
+Order date: 2025-02-14
+Item: Peg Perego Tatamia 3-in-1 Recliner, Swing and High Chair, Ice
+Brand: Peg Perego
+Model: IMTATANA01BL73
+Qty: 1
+Total: $449.99
+
+This is a simulated demo email.

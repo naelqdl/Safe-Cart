@@ -1,0 +1,19 @@
+{
+  "name": "@awsbuilderloft/server",
+  "private": true,
+  "type": "module",
+  "description": "SafeCart agent backend on :8000 (S-J4). Owner: cc. Sponsor clients live in ./integrations (hz).",
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "smoke": "tsx src/smoke.ts",
+    "smoke:cpsc": "tsx registries/cpsc.smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
