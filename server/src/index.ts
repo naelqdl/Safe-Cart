@@ -12,6 +12,7 @@ import { act, tick } from './tick.ts';
 import { personaMode, resetPersona, resolveSimulated } from './adapters/persona.ts';
 import { resetState, state } from './state.ts';
 import { Recorder } from './trail.ts';
+import { resetShopActivity, shopActivity, shopRun, shopStatus, startShopWatch } from './shopwatch.ts';
 import { answerChat } from './llm.ts';
 import type { AgentEvent, ChatReply, Profile } from './wire.ts';
 
@@ -140,6 +141,7 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { ok: true, recallId: id });
     }
     if (req.method === 'POST' && url.pathname === '/demo/reset') {
+      resetShopActivity();
       loadSeed(); resetState(); resetPersona();
       const [m] = await Promise.all([resetStore(), store.resetDemo()]);
       return json(res, 200, { ok: true, merchant: m });
@@ -171,6 +173,9 @@ const server = createServer(async (req, res) => {
       state.guardOverride = b.on === undefined ? undefined : !!b.on;
       return json(res, 200, { ok: true, recallGuard: state.guardOverride ?? 'statsig/default' });
     }
+    if (req.method === 'GET' && url.pathname === '/shop/activity') { // what Maya did on SafeShop and what the agent did about it
+      return json(res, 200, { ...shopStatus(), items: shopActivity.map((a) => ({ ...a, run: shopRun(a.runId) })) });
+    }
     if (req.method === 'GET' && url.pathname === '/refunds') { // store claim log ⋈ our claim letters ⋈ recall facts (web RefundClaim shape) + sample requests on real CPSC recalls
       const titles = new Map(seed.owned.map((o) => [o.id, o.title]));
       const recalls = new Map(seed.recalls.map((r) => [r.recallId, r]));
@@ -201,4 +206,5 @@ server.listen(PORT, async () => {
   console.log(`[safecart] listening on :${PORT} · data ${seed.loaded ? 'ok' : `missing ${seed.missing.join(', ')}`} · ${seed.catalog.length} SKUs · recalls ${seed.recalls.map((r) => r.recallId).join(', ')}`);
   console.log(`[safecart] store: ${await initStore()} (${backendNote}) · policy: ${await initPolicy()} · merchant: ${(await merchantUp()) ? 'up' : 'offline (catalog fallback)'}`);
   sponsors.sieWarm().then((w) => console.log('[safecart] SIE warm:', JSON.stringify(w)));
+  void startShopWatch(); // SafeShop (:3300) cart/wishlist/purchase events -> recall check -> act
 });

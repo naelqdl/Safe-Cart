@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeCart Autopilot</title>
-  <link rel="stylesheet" href="styles.css?v=13">
-  <link rel="stylesheet" href="graph-zones.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="graph-zones.css?v=15">
 </head>
 <body>
   <header class="top">
@@ -22,6 +22,7 @@
       <button data-page="missions"><i data-ic="crosshair"></i>Missions</button>
     </nav>
     <div class="top-right">
+      <a class="shoplink" href="http://localhost:3300/" target="_blank" rel="noopener" title="Open SafeShop, the store the agent watches">SafeShop ↗</a>
       <button class="status" id="status" title="Turn Autopilot on or off (A)"><span class="dot"></span><span id="statusText">AUTOPILOT OFF</span><span class="mini-sw"></span></button>
     </div>
   </header>
@@ -33,6 +34,8 @@
         <section class="home2">
           <div class="h-sum"><b id="hBig">0</b><span id="hSub">items protected</span><button class="h-check" id="hCheck">Check now</button></div>
           <article class="h-card" id="hCard"></article>
+          <div class="h-sec" id="hShopHead" hidden><span>From SafeShop <small id="hShopState"></small></span><a class="h-link" href="http://localhost:3300/" target="_blank" rel="noopener">Open SafeShop ↗</a></div>
+          <div class="h-rows" id="hShop" hidden></div>
           <div class="h-sec"><span>Closest to target</span><button class="h-link" data-go="missions">All missions ›</button></div>
           <div class="h-rows" id="hRows"></div>
           <div class="h-say" id="hSay" hidden></div>
@@ -175,12 +178,12 @@
   <div class="sheet-bg" id="sheetBg"></div>
   <aside class="sheet" id="sheet" aria-label="Audit trail"></aside>
 
-  <script src="vendor/3d-force-graph.min.js?v=13"></script>
-  <script src="icons.js?v=13"></script>
-  <script src="app.js?v=13"></script>
-  <script src="graph.js?v=13"></script>
-  <script src="pages.js?v=13"></script>
-  <script src="compact.js?v=13"></script>
-  <script src="landing.js?v=13"></script>
+  <script src="vendor/3d-force-graph.min.js?v=15"></script>
+  <script src="icons.js?v=15"></script>
+  <script src="app.js?v=15"></script>
+  <script src="graph.js?v=15"></script>
+  <script src="pages.js?v=15"></script>
+  <script src="compact.js?v=15"></script>
+  <script src="landing.js?v=15"></script>
 </body>
 </html>

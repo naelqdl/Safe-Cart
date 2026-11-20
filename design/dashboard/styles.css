@@ -851,3 +851,13 @@ body, .view.home, .view.graph, .top, .chat { background: var(--bg); }
 .pages button.on { background: color-mix(in srgb, var(--accent) 16%, var(--s2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
 .pages button.on .ic { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .grow .pbar i { animation: none; } .pbar i { transition: none; } }
+
+/* ================= SafeShop link: header button + live feed ================= */
+.shoplink { height: 32px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 8px; font: 500 13px var(--text); color: var(--ink); text-decoration: none; box-shadow: inset 0 0 0 1px var(--line-2); margin-right: 10px; }
+.shoplink:hover { background: var(--s2); }
+.top-right { gap: 0; }
+.h-thumb { width: 40px; height: 40px; border-radius: 10px; overflow: hidden; display: grid; place-items: center; background: #fff; }
+.h-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.h-shop.bad { box-shadow: inset 3px 0 0 transparent; } .h-shop .h-rt small.bad { color: var(--bad); } .h-shop .h-rt small.ok { color: var(--ok); }
+.h-sec small { font-size: 12px; color: var(--muted); font-weight: 400; }
+.h-act { display: flex; gap: 8px; flex-wrap: wrap; }

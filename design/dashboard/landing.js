@@ -114,6 +114,26 @@
   const { S, esc, money } = window.SC;
   const $ = (id) => document.getElementById(id);
   let lastCheck = 0;
+  // SafeShop: what Maya did in the store and what the agent did about it (GET /shop/activity on the agent)
+  S.shop = { items: [], connected: false };
+  const API = (new URLSearchParams(location.search).get('api') || 'http://localhost:8000').replace(/\/$/, '');
+  const VERB = { add_to_cart: 'Added to cart', wishlist_add: 'Saved to wishlist', purchase: 'Bought' };
+  let shopSig = '';
+  async function pollShop() {
+    try { const d = await (await fetch(API + '/shop/activity')).json(); S.shop = d; } catch { S.shop = { items: [], connected: false }; }
+    const sig = JSON.stringify((S.shop.items || []).map((a) => [a.id, a.action]));
+    if (sig !== shopSig) { shopSig = sig; shopFeed(); card(); }
+    const st = document.getElementById('hShopState'); if (st) st.textContent = S.shop.connected ? '· live' : '· store offline';
+  }
+  function shopFeed() {
+    const items = (S.shop.items || []).slice(0, 5);
+    document.getElementById('hShopHead').hidden = document.getElementById('hShop').hidden = !items.length;
+    document.getElementById('hShop').innerHTML = items.map((a, i) => {
+      const k = a.verdict === 'recalled' ? 'bad' : a.verdict === 'clear' ? 'ok' : a.verdict === 'checking' ? 'run' : 'warn';
+      return `<button class="h-row h-shop ${k}" data-shop="${i}"><span class="h-thumb">${a.image ? `<img src="${esc(a.image)}" alt="">` : esc(a.title[0])}</span><span class="h-rt"><b>${esc(a.title)}</b><small class="${k === 'run' ? '' : k}">${esc(VERB[a.type] ?? a.type)} · ${esc(a.note)}</small></span><span class="h-pr"><b>${a.price != null ? money(a.price) : ''}</b><small>${esc(ago(Date.parse(a.at)))}</small></span></button>`;
+    }).join('');
+  }
+  setInterval(pollShop, 2000); setTimeout(pollShop, 300);
   const ago = (t) => { if (!t) return 'not yet'; const s = Math.round((Date.now() - t) / 1000); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
   const latest = (arr) => [...arr].sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
   function card() {
@@ -123,7 +143,19 @@
     const step = S.steps.at(-1);
     const srcs = (receipt?.safety?.sources ?? []).map((x) => x.label.replace(/\s*\(.*\)$/, ''));
     let k = 'ok', item = '', head = 'All clear', why = 'Nothing needs Maya right now. SafeCart checks every price against U.S. recalls before it buys.', btn = '';
-    if (S.busy) { k = 'run'; item = 'Working now'; head = 'Checking…'; why = esc(step?.title ?? 'Reading prices and listings'); }
+    const sh = (S.shop?.items || [])[0];
+    const shAt = sh ? Date.parse(sh.at) : 0;
+    const newest = Math.max(recall ? Date.parse(recall.at) : 0, receipt ? Date.parse(receipt.at) : 0, appr ? Date.parse(appr.at ?? 0) : 0);
+    if (sh && shAt >= newest && Date.now() - shAt < 5 * 60e3 && !S.busy) {
+      item = `SafeShop · ${esc(sh.title)}`;
+      const H = { checking: ['run', 'Checking a SafeShop item…'], safe: ['ok', 'Safe to buy'], watching: ['ok', 'Now watching it'], protected: ['ok', 'Protected'],
+        removed_from_cart: ['handled', "We took a recalled item out of Maya's cart"], removed_from_wishlist: ['handled', "We took a recalled item off Maya's wishlist"],
+        claim_filed: ['handled', 'Recalled purchase: we asked for a refund'], unverified: ['warn', "Couldn't verify it yet"] }[sh.action] ?? ['ok', 'Checked'];
+      [k, head] = H;
+      why = sh.verdict === 'clear' ? (sh.sources || []).map((x) => `<span class="tick">✓ ${esc(x)}</span>`).join('') + `<span>${esc(sh.note)}</span>` : esc(sh.note) + (sh.hazard ? ` · ${esc(sh.hazard.slice(0, 110))}${sh.hazard.length > 110 ? '…' : ''}` : '');
+      btn = sh.run ? '<button class="btn ghost" data-shop="0">Audit trail</button>' : '';
+      if (sh.url) btn += ` <a class="btn ghost" href="${esc(sh.url)}" target="_blank" rel="noreferrer">CPSC notice ↗</a>`;
+    } else if (S.busy) { k = 'run'; item = 'Working now'; head = 'Checking…'; why = esc(step?.title ?? 'Reading prices and listings'); }
     else if (appr) { k = 'warn'; item = esc(appr.candidate.title); head = `Needs your OK · ${money(appr.candidate.price)}`; why = esc(appr.reason); btn = '<button class="btn" data-go="approvals">Review</button>'; }
     else if (recall && (!receipt || Date.parse(recall.at) >= Date.parse(receipt.at) - 4000)) {
       const handled = !!(recall.claimRef || recall.replacementTitle || recall.action === 'purchase_skipped');
@@ -145,7 +177,7 @@
   function summary() {
     const p = S.profile; if (!p) return;
     const owned = [...S.recalls.values()].filter((a) => a.itemKind === 'owned').length;
-    const caught = new Set([...S.recalls.values()].map((a) => a.recallId)).size;
+    const caught = new Set([...[...S.recalls.values()].map((a) => a.recallId), ...(S.shop?.items || []).filter((a) => a.verdict === 'recalled').map((a) => a.recallId)]).size;
     $('hBig').textContent = $('nProtected')?.textContent ?? '0';
     $('hSub').innerHTML = `<span class="h-lbl">items protected</span><span class="pill blue">${ic('heart', 14)}${p.wishlist.length} watching</span><span class="pill ${caught ? 'red' : 'green'}">${ic('triangle-alert', 14)}${caught} recall${caught === 1 ? '' : 's'} caught</span><span class="pill green">${ic('credit-card', 14)}${money(S.spent)} spent</span><span class="pill cyan">${ic('receipt-text', 14)}${S.refunds?.claims?.length ?? 0} refunds</span><span class="h-ago">checked ${ago(lastCheck)}</span>`;
   }
@@ -173,6 +205,8 @@
   document.querySelector('.home2').addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) return SC.setPage(g.dataset.go);
     if (e.target.closest('[data-run-last]')) return SC.openRun(S.runs.length - 1);
+    const sb = e.target.closest('[data-shop]');
+    if (sb) { const a = (S.shop.items || [])[+sb.dataset.shop]; if (a?.run) { const i = S.runs.findIndex((r) => r.id === a.run.id); if (i >= 0) S.runs[i] = a.run; else S.runs.push(a.run); SC.openRun(S.runs.findIndex((r) => r.id === a.run.id)); } }
     const a = e.target.closest('[data-ask]'); if (a) { $('chat').classList.add('open'); $('chatInput').value = a.dataset.ask; $('chatForm').requestSubmit(); }
   });
   $('hCheck').onclick = () => SC.check();
