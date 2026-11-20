@@ -136,7 +136,7 @@ function StepItem({ step, mission }: { step: AuditStep; mission?: string }) {
         </time>
         {mission && <span className="rounded-md bg-muted px-1.5 py-0.5">{mission}</span>}
       </div>
-      {step.detail && <p className="text-sm text-muted-foreground">{step.detail}</p>}
+      {step.detail && <p className="line-clamp-2 text-sm text-muted-foreground" title={step.detail}>{step.detail}</p>}
       {step.sources && step.sources.length > 0 && (
         <ul className="flex flex-wrap gap-1.5 pt-1" aria-label="Sources">
           {step.sources.map((s, i) => (
