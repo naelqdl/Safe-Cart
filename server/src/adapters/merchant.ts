@@ -54,8 +54,8 @@ export async function placeOrder(sku: string, paymentRef: string): Promise<{ ord
   catch { return { orderRef: nextId('ORD-SIM'), simulated: true }; }
 }
 
-export async function fileClaim(ownedItemId: string, recallId: string, orderRef?: string): Promise<{ claimRef: string; simulated: boolean }> {
-  try { const r = await call<any>('/api/claims', { method: 'POST', body: { ownedItemId, orderRef, recallId, kind: 'refund' } }); return { claimRef: r.claimRef, simulated: false }; }
+export async function fileClaim(ownedItemId: string, recallId: string, orderRef?: string, message?: string): Promise<{ claimRef: string; simulated: boolean }> {
+  try { const r = await call<any>('/api/claims', { method: 'POST', body: { ownedItemId, orderRef, recallId, kind: 'refund', message } }); return { claimRef: r.claimRef, simulated: false }; }
   catch { return { claimRef: nextId('CLM-SIM'), simulated: true }; }
 }
 

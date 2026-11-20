@@ -51,8 +51,11 @@ export function pay(sptId: string | null, amountUsd: number, meta: Record<string
       form.set('payment_method_data[shared_payment_granted_token]', sptId);
       extra['Stripe-Version'] = PREVIEW;
     } else {
+      // Stripe now rejects payment_method_types here (cc38). Card-only, no redirects, so confirm=true
+      // works without a return_url.
       form.set('payment_method', 'pm_card_visa');
-      form.append('payment_method_types[]', 'card');
+      form.set('automatic_payment_methods[enabled]', 'true');
+      form.set('automatic_payment_methods[allow_redirects]', 'never');
     }
     const { data } = await http(S, `${BASE}/payment_intents`, { headers: auth(extra), form });
     if (data?.livemode) throw new IntegrationError(S, 0, 'got a livemode PaymentIntent; aborting', 'livemode');

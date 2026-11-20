@@ -8,10 +8,18 @@ import { checkSafety, type SafetyResult } from './safety.ts';
 import { inspectListing } from './listing.ts';
 import { nextId, state } from './state.ts';
 import { Recorder } from './trail.ts';
+import { writeClaimLetter, writeRationale, type Written } from './llm.ts';
 import type { AgentEvent, Approval, RecallAlert, Receipt, SafetyCheck, TickRequest } from './wire.ts';
 
 type Emit = (e: AgentEvent) => void;
 const money = (n: number) => `$${n.toFixed(2)}`;
+
+function recordWrite(rec: Recorder, kind: 'decide' | 'act', what: string, w: Written) {
+  rec.step(kind, w.fallback ? `${what} (LLM unavailable: ${w.fallback}; template used)` : what, {
+    tool: 'anthropic.messages', model: w.fallback ? undefined : w.model, latencyMs: w.latencyMs, costUsd: w.costUsd || undefined, tokens: w.tokens || undefined,
+    status: w.fallback ? 'warn' : 'ok', detail: w.text.slice(0, 300),
+  });
+}
 
 function alert(emit: Emit, a: Omit<RecallAlert, 'at'>) {
   const full = { ...a, at: new Date().toISOString() };
@@ -105,8 +113,10 @@ async function sweepOwned(emit: Emit, p: Policy, spent: () => number) {
         tool: 'singlestore.matchOwnedToRecall', status: 'blocked', flags: ['conflict'],
         detail: `model ${o.model} · hazard: ${recall.hazard.slice(0, 140)}`, sources: [{ label: `CPSC recall ${recallId}`, url: recall.url }],
       });
+      const letter = await writeClaimLetter({ customer: seed.user.name, item: o.title, model: o.model, orderRef: o.orderRef, purchasedAt: o.purchasedAt, recallId, recallTitle: recall.title, hazard: recall.hazard, remedy: recall.remedy, recallUrl: recall.url });
+      recordWrite(rec, 'act', 'Drafted refund claim letter', letter);
       const claimDone = rec.start('act', `Filing refund claim for ${o.title}`, { tool: 'merchant /api/claims' });
-      const claim = await fileClaim(o.id, recallId, o.orderRef);
+      const claim = await fileClaim(o.id, recallId, o.orderRef, letter.text);
       claimDone(`Refund claim ${claim.claimRef} filed${claim.simulated ? ' (SIMULATED: store offline)' : ''}`, { detail: `remedy: ${recall.remedy.slice(0, 140)}` });
       state.safety.set(o.id, { status: 'recalled', sources: [{ label: `CPSC recall ${recallId}`, url: recall.url }], checkedAt: new Date().toISOString(), recallId });
       const a = alert(emit, { id: `alert_${recallId}_${o.id}`, recallId, recallTitle: recall.title, hazard: recall.hazard, remedy: recall.remedy, url: recall.url, itemTitle: o.title, itemKind: 'owned', action: 'refund_claim_filed', claimRef: claim.claimRef });
@@ -116,13 +126,17 @@ async function sweepOwned(emit: Emit, p: Policy, spent: () => number) {
       const { price, listPrice } = localPriceOrListing(repl.item);
       const d = decide(p, price, repl.safety.check, spent());
       rec.run.decision = { chosen: repl.item.title, rationale: `Replaces recalled ${o.title}. ${d.rule}.`, alternatives: [{ name: o.title, whyNot: `recalled: CPSC ${recallId}` }] };
+      const why = writeRationale({ decision: d.buy ? 'Bought a replacement' : 'Asked Maya first', item: repl.item.title, price, rule: d.rule, safety: repl.safety.check.status, sources: repl.safety.check.sources.map((x) => x.label), rejected: rec.run.decision.alternatives, preferences: seed.user.preferences })
+        .then((w) => { rec.run.decision!.rationale = w.text; recordWrite(rec, 'decide', 'Explained decision to Maya', w); });
       if (d.buy) {
         const r = await buy(rec, emit, { missionId: o.id, item: repl.item, price, listPrice, safety: repl.safety.check, auto: true, why: `replacement for recalled ${o.title}`, capUsd: p.autoBuyLimit });
         alert(emit, { ...a, action: 'replacement_bought', replacementTitle: repl.item.title, claimRef: claim.claimRef });
+        await why;
         rec.finish(r ? 'done' : 'failed');
       } else {
         approval(emit, o.id, repl.item, price, listPrice, `Replacement for recalled ${o.title}: ${d.rule}`, o.id);
         alert(emit, { ...a, action: 'needs_you', claimRef: claim.claimRef, replacementTitle: repl.item.title });
+        await why;
         rec.finish('blocked');
       }
     }
@@ -168,13 +182,17 @@ async function watchWish(emit: Emit, p: Policy, w: WishItem, spent: () => number
   const d = decide(p, price, safety, spent());
   rec.run.decision = { chosen: chosen.title, rationale: `${chosen === item ? 'Wishlist item on sale' : `Safe second choice for a recalled wishlist item`}. ${d.rule}.`, alternatives };
   rec.step('decide', d.buy ? `Decision: buy ${chosen.title}` : `Decision: ask Maya (${d.rule})`, { status: d.buy ? 'ok' : 'warn', tool: 'policy (deterministic)', detail: d.rule });
+  const why = writeRationale({ decision: d.buy ? 'Bought' : 'Asked Maya first', item: chosen.title, price, target: w.targetPrice, rule: d.rule, safety: p.recallGuard ? safety?.status : 'not checked (NAIVE mode)', sources: safety?.sources.map((x) => x.label), rejected: alternatives, preferences: seed.user.preferences })
+    .then((w) => { rec.run.decision!.rationale = w.text; recordWrite(rec, 'decide', 'Explained decision to Maya', w); });
   if (d.buy) {
     await buy(rec, emit, { missionId: w.id, item: chosen, price, listPrice, safety, auto: true, why: d.rule, capUsd: p.autoBuyLimit });
     emit({ type: 'mission', missionId: w.id, status: 'done', note: `bought ${chosen.title} for ${money(price)}` });
+    await why;
     rec.finish('done');
   } else {
     approval(emit, w.id, chosen, price, listPrice, d.rule);
     emit({ type: 'mission', missionId: w.id, status: 'waiting', note: d.rule });
+    await why;
     rec.finish('blocked');
   }
 }
