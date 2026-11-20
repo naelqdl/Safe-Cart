@@ -16,10 +16,16 @@ SafeCart is a personal shopping agent with an audit trail. It remembers a shoppe
 
 ## Every sponsor tool and how we used it
 
-- SingleStore: catalog, price history, wishlist, owned items, recalls table and the step ledger; full-text search for safe alternatives.- Senso: knowledge base of recall notices and store policy; a fact-check "the <brand> <model> has no active recall" gates every buy and is cited in the trail.- Superlinked SIE: guard on untrusted listing text, extraction of brand, model, price and UPC, rerank of alternatives by preferences.- Statsig: dynamic config `purchase_policy` and gate `recall_guard`, flipped live to switch between SafeCart and the naive agent.- Amplitude: browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen). Client is in the repo and is a no-op without an API key. Funnel chart: TODO confirm it was built.
+- SingleStore: catalog, price history, wishlist, owned items, recalls table and the step ledger; full-text search for safe alternatives.
+- Senso: knowledge base of recall notices and store policy; a fact-check "the <brand> <model> has no active recall" gates every buy and is cited in the trail.
+- Superlinked SIE: guard on untrusted listing text, extraction of brand, model, price and UPC, rerank of alternatives by preferences.
+- Statsig: dynamic config `purchase_policy` and gate `recall_guard`, flipped live to switch between SafeCart and the naive agent.
+- Amplitude: browser events for agent outcomes (sale_detected, safety_check, purchase_auto, recall_alert, approvals, policy_seen). Client is in the repo and is a no-op without an API key. Funnel chart: TODO confirm it was built.
 - Firedrill: naive vs SafeCart scenarios scaffolded in `evals/`; not run (drills need macOS/Linux). No results.
+- Persona: step-up identity check before any approved purchase over the auto-buy limit ($150); the agent does not pay until the inquiry passes, and the trail keeps only the inquiry id. Real Persona API with a sandbox key; without one the demo uses a labelled SIMULATED check.
 - Stripe (not a sponsor): TEST-mode PaymentIntent as the purchase action.
 - Claude (not a sponsor): writes each decision rationale and the refund-claim letter; never decides. Model, latency and cost show in the trail.
+
 ## Links
 
 - Repo: https://github.com/naelqdl/Safe-Cart

@@ -1,4 +1,5 @@
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,17 @@ export function ApprovalsPanel({
   onApprove(id: string): void;
   onDecline(id: string): void;
 }) {
+  const [verifying, setVerifying] = useState(false);
+  // Demo stand-in for the Persona flow: pass or fail the SIMULATED inquiry, then retry the purchase.
+  const resolve = async (id: string, outcome: "approved" | "declined") => {
+    setVerifying(true);
+    try {
+      await fetch("/api/demo/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ outcome }) });
+      onApprove(id);
+    } finally {
+      setVerifying(false);
+    }
+  };
   return (
     <Card className={approvals.length > 0 ? "ring-2 ring-warning/50" : undefined}>
       <CardHeader>
@@ -56,6 +68,34 @@ export function ApprovalsPanel({
                   <Alert variant="destructive">
                     <AlertTitle>Purchase failed</AlertTitle>
                     <AlertDescription>{ui.message ?? "Try again."}</AlertDescription>
+                  </Alert>
+                )}
+                {ui.status === "verify" && ui.verify && (
+                  <Alert>
+                    <ShieldCheck aria-hidden />
+                    <AlertTitle>Identity check with Persona</AlertTitle>
+                    <AlertDescription className="flex flex-col gap-2">
+                      <span>{ui.message}</span>
+                      <span className="font-mono text-xs">
+                        Inquiry {ui.verify.inquiryId}
+                        {ui.verify.simulated && " · SIMULATED (no Persona key)"}
+                      </span>
+                      {ui.verify.url && (
+                        <a href={ui.verify.url} target="_blank" rel="noreferrer" className="w-fit font-medium text-primary hover:underline">
+                          Verify with Persona, then press Approve again
+                        </a>
+                      )}
+                      {ui.verify.simulated && (
+                        <span className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="outline" disabled={verifying || pending} onClick={() => resolve(a.id, "approved")}>
+                            Pass check as Maya
+                          </Button>
+                          <Button size="sm" variant="ghost" disabled={verifying || pending} onClick={() => resolve(a.id, "declined")}>
+                            Fail check
+                          </Button>
+                        </span>
+                      )}
+                    </AlertDescription>
                   </Alert>
                 )}
                 <div className="flex gap-2">

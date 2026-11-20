@@ -25,7 +25,8 @@ Notes for recording the ≤3 min submission video. Live-demo run sheet and recor
 | 1:00 | **Refunds** tab, click the high chair row | The refund email SafeCart sent; ~10 s later the store's reply ("Refund approved") | "Here's the letter it sent and the store's answer." Then click a **Sample** row to show a second thread. |
 | 1:25 | Logs → **Put stroller on sale −30%** | Trail: sale seen, stroller RECALLED (CPSC 10014), skipped, next choice bought | "It saw the sale, checked the recall, skipped it and bought the safe second choice. Every step is in the trail with its source." |
 | 1:55 | Recall guard OFF, sale again, guard ON | Receipt labelled NAIVE | "With the guard off, a naive agent buys the recalled stroller." |
-| 2:15 | **Plant injected listing**, open the run in Runs | "blocked a hidden instruction" banner | "Listing text is untrusted; hidden instructions for AI agents are dropped." |
+| 2:05 | Logs → **Big purchase ($199, needs Persona)**, then Shop → Approvals → **Approve** | "Identity check with Persona" box (inquiry id); click **Pass check as Maya** → receipt for the car seat. (**Fail check** → not bought) | "Anything over her $150 limit needs her OK and a Persona identity check, so nobody else can spend through her agent." |
+| 2:20 | **Plant injected listing**, open the run in Runs | "blocked a hidden instruction" banner | "Listing text is untrusted; hidden instructions for AI agents are dropped." |
 | 2:30 | Sponsor map / architecture | https://claude.ai/artifact/MLAKbdaVUM9ngT9sEtGBhL, docs/architecture.png | Sponsors and what each does. |
 | 2:45 | (talk) | | Next step: screen-aware memory (below). Close. |
 
@@ -40,7 +41,8 @@ A sale applies to one check only: click **Put stroller on sale** again before ea
 - **Claude:** writes each decision's explanation and the refund letter; it never decides to buy. Without `ANTHROPIC_API_KEY` a labelled template is used (the template cuts the recall remedy short, e.g. "prepaid shippi").
 - **Where Maya's data comes from today:** seed files (`data/user.json`, `wishlist.json`, `owned.json`, matching the order emails in `data/inbox/`) plus chat ("add … to my wishlist"). Chat-added items last until Reset demo.
 - **Screen reading is NOT built.** Say it as the vision: "SafeCart is meant to run as a desktop companion that, with your permission, reads what's on screen while you shop: what you add to a wishlist or cart, what you buy, what you look at often, and stores it in this dashboard." Do not show or imply it working.
-- Firedrill evals were not run; Cognee/Airbyte are not on main. Don't quote numbers you didn't measure.
+- **Persona:** without `PERSONA_API_KEY` + `PERSONA_TEMPLATE_ID` the check is SIMULATED (says so on screen and in the trail); with a sandbox key the card shows a real Persona link instead of the pass/fail buttons (that path was not run: no key).
+- Firedrill evals were not run; Cognee/Airbyte are not on main; Arcee is not used (Claude writes the letters). Don't quote numbers you didn't measure.
 
 ## Gotchas
 
