@@ -12,10 +12,10 @@ export function CompactView({ api, chat }: { api: AutopilotApi; chat: ReturnType
   const { state } = api;
   return (
     <div className="flex h-dvh flex-col">
-      <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
+      <header className="flex items-center justify-between gap-3 border-b bg-card px-3 py-2">
         <div className="flex min-w-0 items-center gap-3">
           <h1 className="truncate text-sm font-semibold">{appConfig.name}</h1>
-          {state.approvals.length > 0 && <Badge>{state.approvals.length} waiting</Badge>}
+          {state.approvals.length > 0 && <Badge variant="warning">{state.approvals.length} waiting</Badge>}
         </div>
         <AutopilotControl enabled={api.enabled} onToggle={api.setEnabled} secondsToNextCheck={api.secondsToNextCheck} ticking={state.ticking} />
       </header>

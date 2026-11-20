@@ -32,29 +32,26 @@ export interface Approval { id: string; missionId: string; candidate: Candidate;
 export interface Receipt {
   reference: string; missionId: string; candidateId: string; title: string;
   amount: number; currency: string; saved: number; at: string; auto: boolean;
-  safety?: SafetyCheck; // SafeCart: the recall check that ran before this purchase
+  safety?: SafetyCheck;
 }
 export type MissionStatus = "watching" | "waiting" | "done";
 
-// --- SafeCart (D2) wire types: owner hz (plans/hz.md#H0a). The server emits exactly these. ---
-/** Result of the recall check on one product. unknown = a source failed; never auto-buy on unknown. */
+// --- SafeCart (plans/nael.md "Shared contract"): recall safety, alerts and the shopper profile ---
 export interface SafetyCheck {
-  status: "clear" | "recalled" | "unknown";
-  sources: { label: string; url?: string }[]; // e.g. CPSC API, Senso KB (content id)
-  checkedAt: string;                          // ISO 8601
+  status: "clear" | "recalled" | "unknown";   // unknown = a source failed; never auto-buy on unknown
+  sources: SourceRef[];                        // e.g. CPSC API, Senso KB (content id); empty = NAIVE (no check)
+  checkedAt: string;                           // ISO
   recallId?: string;
 }
-/** A recall that hit a wishlist or owned item, and what the agent did about it. Upsert by id. */
 export interface RecallAlert {
   id: string; recallId: string; recallTitle: string; hazard: string; remedy: string; url: string;
   itemTitle: string; itemKind: "owned" | "wishlist";
   action: "refund_claim_filed" | "purchase_skipped" | "replacement_bought" | "needs_you";
   claimRef?: string; replacementTitle?: string; at: string;
 }
-/** GET /profile: what the agent remembers about the user. */
 export interface Profile {
   name: string;
-  preferences: { label: string; source: "user" | "memory" }[]; // memory = from Cognee (P1)
+  preferences: { label: string; source: "user" | "memory" }[];   // memory = from Cognee (P1)
   wishlist: { id: string; sku: string; title: string; targetPrice: number; price: number; listPrice: number; onSale: boolean; safety?: SafetyCheck }[];
   owned: { id: string; title: string; model: string; purchasedAt: string; merchant: string; safety?: SafetyCheck }[];
   policy: { autoBuyLimit: number; minDiscountPct: number; autonomy: "auto" | "ask_first"; recallGuard: boolean; source: "statsig" | "default" };
@@ -66,13 +63,13 @@ export type AgentEvent =
   | { type: "approval"; approval: Approval }          // add to the approvals inbox
   | { type: "receipt"; receipt: Receipt }             // the agent executed a purchase
   | { type: "run"; run: Run }                         // K-trail Run; upsert by run.id
-  | { type: "recall"; alert: RecallAlert }            // SafeCart; upsert by alert.id
+  | { type: "recall"; alert: RecallAlert }            // SafeCart recall alert; upsert by alert.id
   | { type: "error"; message: string }
   | { type: "done" };
 
 /** POST /api/action body: execute a purchase the user approved. */
 export interface ActionRequest { candidateId: string; query: string }
-export interface ActionResult { ok: boolean; reference?: string; message: string; step: AuditStep }
+export interface ActionResult { ok: boolean; reference?: string; message: string; step: AuditStep; safety?: SafetyCheck }
 
 // --- Chat: the user talks to the agent; the agent also posts on its own ---
 export interface ChatMessage {
@@ -106,6 +103,7 @@ export interface DashboardState {
   approvalStates: Record<string, ApprovalUiState>;
   receipts: Receipt[];
   runs: Run[];          // newest last
+  recalls: RecallAlert[]; // newest first
   checks: number;       // ticks completed
   ticking: boolean;
   lastTickAt?: string;
@@ -121,4 +119,6 @@ export interface AutopilotApi {
   approve(approvalId: string): void;
   decline(approvalId: string): void;
   addMission(title: string, maxPrice: number): void;
+  /** Contract: missions mirror the profile wishlist (id = wishlist id, maxPrice = targetPrice). No-op when ids are unchanged. */
+  syncWishlist(items: { id: string; title: string; targetPrice: number }[]): void;
 }

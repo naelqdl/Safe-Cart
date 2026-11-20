@@ -1,0 +1,21 @@
+{
+  "schema": "firedrill.native-world.v1",
+  "name": "SafeCart scenario B",
+  "description": "Scenario B only, 5 repetitions. Run once with recall_guard ON and once OFF.",
+  "dependencies": [],
+  "resources": [
+    {
+      "origin": "native_library",
+      "kind": "scenario",
+      "id": "<scenario-b version id>",
+      "revision": 1,
+      "digest": "<digest>"
+    }
+  ],
+  "configuration_names": [],
+  "execution": {
+    "repetitions": 5,
+    "max_parallel": 1,
+    "reset": "serialized"
+  }
+}

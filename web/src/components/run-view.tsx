@@ -15,17 +15,17 @@ const KIND_ICON: Record<Step["kind"], LucideIcon> = {
   retrieve: Search, extract: FileText, verify: ShieldCheck, policy: ClipboardCheck, decide: Gavel, guard: ShieldAlert, act: CreditCard,
 };
 const STATUS_COLOR: Record<Step["status"], string> = {
-  ok: "text-emerald-600 dark:text-emerald-400", warn: "text-amber-600 dark:text-amber-400",
+  ok: "text-success", warn: "text-warning",
   blocked: "text-destructive", error: "text-destructive",
 };
 const VERDICT_COLOR: Record<Claim["verdict"], string> = {
-  verified: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  verified: "bg-success/10 text-success",
   conflict: "bg-destructive/10 text-destructive",
-  unsupported: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  unsupported: "bg-warning/10 text-warning",
   not_verifiable: "bg-muted text-muted-foreground",
   pending: "bg-muted text-muted-foreground",
 };
-const MODE_COLOR = { real: "bg-destructive text-white", test: "bg-amber-500 text-black", simulated: "bg-sky-600 text-white" } as const;
+const MODE_COLOR = { real: "bg-destructive text-white", test: "bg-warning text-white", simulated: "bg-primary text-primary-foreground" } as const;
 const usd = (n: number) => formatPrice(n, "USD");
 const label = (s: string) => s.replace(/_/g, " ");
 
@@ -92,7 +92,7 @@ function FsaPanel({ fsa }: { fsa: NonNullable<Run["fsa"]> }) {
         </dl>
         <div>
           <div className="h-2 overflow-hidden rounded-full bg-muted" role="img" aria-label={`Spent ${usd(fsa.spentUsd)} of ${usd(fsa.atRiskUsd)} at risk`}>
-            <div className="h-full bg-emerald-500" style={{ width: pct + "%" }} />
+            <div className="h-full bg-success" style={{ width: pct + "%" }} />
           </div>
           <p className="mt-1 text-xs text-muted-foreground tabular-nums">Spent {usd(fsa.spentUsd)} of {usd(fsa.atRiskUsd)} at risk</p>
         </div>
