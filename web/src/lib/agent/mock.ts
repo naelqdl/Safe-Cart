@@ -1,100 +1,114 @@
-// Mock agent: a scripted scenario that emits the same events a real backend would.
-// Triggers: query containing "fail" → error event after search; "decline" → action returns ok:false.
-import type { ActionRequest, ActionResult, AgentEvent, AgentRequest, Candidate } from "./types";
+// Mock agent: deterministic scripted checks that emit the same events a real backend would.
+// Triggers: a mission title containing "fail" → error event during its check; "decline" → its purchase fails.
+import type { ActionRequest, ActionResult, AgentEvent, AuditStep, Candidate, TickRequest } from "./types";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-const delay = () => sleep(350 + Math.floor(Math.random() * 351));
+const delay = () => sleep(250 + Math.floor(Math.random() * 201));
 const now = () => new Date().toISOString();
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export async function* runMockAgent(req: AgentRequest): AsyncGenerator<AgentEvent> {
-  const subject = req.query.trim().slice(0, 40);
-
-  await delay();
-  yield {
-    type: "step",
-    step: {
-      id: "s-plan", at: now(), kind: "plan", status: "ok",
-      title: `Understand request: "${subject}"`,
-      detail: "Extracted needs: budget, quality, delivery time (mock assumptions).",
-    },
-  };
-
-  await delay();
-  yield {
-    type: "step",
-    step: {
-      id: "s-search", at: now(), kind: "search", status: "ok", title: "Search catalog",
-      sources: [{ label: "Mock catalog" }], detail: "Found 3 candidates.",
-    },
-  };
-
-  if (req.query.toLowerCase().includes("fail")) {
+export async function* runMockTick(req: TickRequest): AsyncGenerator<AgentEvent> {
+  const { tick, missions, guardrails, spentToday } = req;
+  if (missions.length === 0) {
     await delay();
-    yield { type: "error", message: 'Mock failure triggered (query contains "fail").' };
+    yield { type: "step", step: { id: `t${tick}-plan`, at: now(), kind: "plan", status: "ok", title: "Nothing to watch — add a mission" } };
+    await delay();
+    yield { type: "done" };
     return;
   }
 
-  const c1: Candidate = {
-    id: "c1", title: `${subject} (Value pick)`, vendor: "Mock Store A", price: 19.99, currency: "USD",
-    attributes: { Rating: "3.9 / 5", Delivery: "5–7 days" }, verdict: "considering",
-  };
-  const c2: Candidate = {
-    id: "c2", title: `${subject} (Best match)`, vendor: "Mock Store B", price: 34.99, currency: "USD",
-    attributes: { Rating: "4.6 / 5", Delivery: "2 days" }, verdict: "considering",
-  };
-  const c3: Candidate = {
-    id: "c3", title: `${subject} (Premium)`, vendor: "Mock Store C", price: 89.0, currency: "USD",
-    attributes: { Rating: "4.8 / 5", Delivery: "Next day" }, verdict: "considering",
-  };
-  for (const candidate of [c1, c2, c3]) {
+  const m = missions[tick % missions.length];
+  const money = new Intl.NumberFormat("en-US", { style: "currency", currency: m.currency });
+  const fmt = (n: number) => money.format(n);
+  const step = (name: string, s: Omit<AuditStep, "id" | "at" | "missionId">): AgentEvent => ({
+    type: "step",
+    step: { id: `t${tick}-${name}`, at: now(), missionId: m.id, ...s },
+  });
+  const lower = m.title.toLowerCase();
+
+  await delay();
+  yield step("check", { kind: "search", status: "running", title: `Checking 3 stores for "${m.title}"` });
+  if (lower.includes("fail")) {
     await delay();
-    yield { type: "candidate", candidate };
+    yield { type: "error", message: `Mock failure while checking "${m.title}"` };
+    return;
+  }
+  await delay();
+  yield step("check", {
+    kind: "search", status: "ok", title: `Checked 3 stores for "${m.title}"`,
+    sources: [{ label: "Mock catalog" }, { label: "Mock price history" }],
+  });
+
+  const outcome = tick % 3;
+  if (outcome === 0) {
+    const best = round2(m.maxPrice * 1.15);
+    await delay();
+    yield step("compare", {
+      kind: "compare", status: "ok",
+      title: `Best price ${fmt(best)} is above your ${fmt(m.maxPrice)} max — keep watching`,
+      sources: [{ label: "Mock catalog" }],
+    });
+    await delay();
+    yield { type: "mission", missionId: m.id, status: "watching", note: "No qualifying offer yet" };
+    await delay();
+    yield { type: "done" };
+    return;
   }
 
-  const fetchStep = {
-    id: "s-fetch", kind: "fetch", title: "Read spec sheets and reviews",
-  } as const;
-  await delay();
-  yield { type: "step", step: { ...fetchStep, at: now(), status: "running" } };
-  await delay();
-  yield {
-    type: "step",
-    step: {
-      ...fetchStep, at: now(), status: "ok",
-      sources: [{ label: "Mock spec sheet" }, { label: "Mock reviews" }],
-    },
+  const price = round2(m.maxPrice * (outcome === 1 ? 0.85 : 0.97));
+  const listPrice = round2(m.maxPrice * 1.2);
+  const saved = round2(listPrice - price);
+  const candidate: Candidate = {
+    id: `c-${m.id}-${tick}`, title: m.title + " (Mock Store B)", vendor: "Mock Store B", price, currency: m.currency,
+    attributes: { Rating: "4.6 / 5", Delivery: "2 days", "List price": fmt(listPrice) },
+    verdict: "selected", reason: `Lowest price under your ${fmt(m.maxPrice)} max`,
   };
+  await delay();
+  yield step("compare", {
+    kind: "compare", status: "ok",
+    title: `Found ${fmt(price)} (list ${fmt(listPrice)}), under your ${fmt(m.maxPrice)} max`,
+    sources: [{ label: "Mock catalog" }],
+  });
 
-  await delay();
-  yield {
-    type: "step",
-    step: {
-      id: "s-compare", at: now(), kind: "compare", status: "warn", title: "Compare against requirements",
-      detail: "2 of 3 candidates fail a requirement.",
-    },
-  };
-  const verdicts: Candidate[] = [
-    { ...c1, verdict: "rejected", reason: "Rating 3.9 is below the 4.0 minimum." },
-    { ...c3, verdict: "rejected", reason: "$89.00 is over the assumed $50 budget." },
-    { ...c2, verdict: "selected", reason: "Meets every requirement at the lowest qualifying price." },
-  ];
-  for (const candidate of verdicts) {
+  const { autoBuyLimit, dailyBudget } = guardrails;
+  if (price <= autoBuyLimit && spentToday + price <= dailyBudget) {
     await delay();
-    yield { type: "candidate", candidate };
+    yield step("decide", {
+      kind: "decide", status: "ok", title: "Within guardrails — buying automatically",
+      detail: `Auto-buy limit ${fmt(autoBuyLimit)}, spent today ${fmt(spentToday)} of ${fmt(dailyBudget)}`,
+    });
+    await delay();
+    if (lower.includes("decline")) {
+      yield step("act", { kind: "act", status: "fail", title: "Mock payment declined", sources: [{ label: "Mock checkout" }] });
+      await delay();
+      yield { type: "mission", missionId: m.id, status: "watching", note: "Payment declined; will retry" };
+    } else {
+      const reference = "MOCK-" + Date.now().toString(36).toUpperCase();
+      yield step("act", {
+        kind: "act", status: "ok", title: `Bought for ${fmt(price)} — ${reference}`, sources: [{ label: "Mock checkout" }],
+      });
+      await delay();
+      yield {
+        type: "receipt",
+        receipt: {
+          reference, missionId: m.id, candidateId: candidate.id, title: m.title,
+          amount: price, currency: m.currency, saved, at: now(), auto: true,
+        },
+      };
+      await delay();
+      yield { type: "mission", missionId: m.id, status: "done", note: `Bought for ${fmt(price)}` };
+    }
+  } else {
+    const reason = price > autoBuyLimit
+      ? `${fmt(price)} is over your ${fmt(autoBuyLimit)} auto-buy limit`
+      : `Would exceed today's ${fmt(dailyBudget)} budget`;
+    await delay();
+    yield step("decide", { kind: "decide", status: "warn", title: "Needs your approval", detail: reason });
+    await delay();
+    yield { type: "approval", approval: { id: `a-${m.id}-${tick}`, missionId: m.id, candidate, reason, at: now() } };
+    await delay();
+    yield { type: "mission", missionId: m.id, status: "waiting", note: "Waiting for your approval" };
   }
-
-  await delay();
-  yield { type: "step", step: { id: "s-decide", at: now(), kind: "decide", status: "ok", title: "Choose Mock Store B" } };
-
-  await delay();
-  yield {
-    type: "decision",
-    decision: {
-      candidateId: "c2",
-      summary: `Best match for "${subject}": meets rating, budget and delivery requirements. All data is mock.`,
-    },
-  };
-
   await delay();
   yield { type: "done" };
 }
