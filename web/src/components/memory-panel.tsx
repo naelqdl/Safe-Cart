@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProfileApi } from "@/hooks/use-profile";
 import { formatPrice } from "@/lib/format";
-import type { SafetyCheck } from "@/lib/agent/types";
+import type { RecallAlert, SafetyCheck } from "@/lib/agent/types";
 
 const cur = "USD";
 
@@ -20,9 +20,10 @@ function SafetyBadge({ safety, url }: { safety?: SafetyCheck; url?: string }) {
 }
 
 // Data comes from useProfile() (called once in the dashboard and shared with the demo bar).
-export function MemoryPanel({ api }: { api: ProfileApi }) {
+export function MemoryPanel({ api, recalls }: { api: ProfileApi; recalls: RecallAlert[] }) {
   const { profile, error, reload } = api;
-  const recallUrl = "https://www.cpsc.gov/Recalls";
+  // RECALLED badges link to the notice from the matching recall alert, else the CPSC recalls page.
+  const recallUrl = (s?: SafetyCheck) => recalls.find((a) => a.recallId === s?.recallId)?.url ?? "https://www.cpsc.gov/Recalls";
   return (
     <Card>
       <CardHeader>
@@ -66,7 +67,7 @@ export function MemoryPanel({ api }: { api: ProfileApi }) {
                       {w.onSale && w.listPrice > w.price && (
                         <Badge>On sale −{Math.round((1 - w.price / w.listPrice) * 100)}%</Badge>
                       )}
-                      <SafetyBadge safety={w.safety} url={recallUrl} />
+                      <SafetyBadge safety={w.safety} url={recallUrl(w.safety)} />
                     </div>
                   </li>
                 ))}
@@ -81,7 +82,7 @@ export function MemoryPanel({ api }: { api: ProfileApi }) {
                       <p className="truncate text-sm font-medium" title={o.title}>{o.title}</p>
                       <p className="text-xs text-muted-foreground">Model {o.model} · {o.merchant}</p>
                     </div>
-                    <SafetyBadge safety={o.safety} url={recallUrl} />
+                    <SafetyBadge safety={o.safety} url={recallUrl(o.safety)} />
                   </li>
                 ))}
               </ul>

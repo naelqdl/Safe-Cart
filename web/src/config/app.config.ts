@@ -20,7 +20,8 @@ export const appConfig = {
   showDemoRuns: false,
   // SafeCart demo bar (sale / recall / reset buttons). Ids must match the backend seed (data/**) once AGENT_BACKEND_URL is set.
   showDemoControls: true,
-  demo: { saleSku: "SKU-STROLLER", salePct: 30, recallId: "MOCK-HIGHCHAIR" },
+  // Placeholders: set NEXT_PUBLIC_DEMO_SALE_SKU / NEXT_PUBLIC_DEMO_RECALL_ID on the presenter PC to the seeded ids (rebuild after changing).
+  demo: { saleSku: process.env.NEXT_PUBLIC_DEMO_SALE_SKU || "SKU-STROLLER", salePct: 30, recallId: process.env.NEXT_PUBLIC_DEMO_RECALL_ID || "MOCK-HIGHCHAIR" },
   // What the agent may do without asking
   guardrails: { autoBuyLimit: 150, dailyBudget: 500 } as Guardrails,
   // Starting missions the agent watches (users can add more on the dashboard).

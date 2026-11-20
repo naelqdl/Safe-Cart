@@ -17,6 +17,7 @@ import { useAutopilot } from "@/hooks/use-autopilot";
 import { useChat } from "@/hooks/use-chat";
 import { useProfile } from "@/hooks/use-profile";
 import { useCompact, useMedia } from "@/hooks/use-compact";
+import { useEffect } from "react";
 
 export function Dashboard() {
   const api = useAutopilot();
@@ -25,6 +26,11 @@ export function Dashboard() {
   const docked = useMedia("(min-width: 1280px)");
   const { state } = api;
   const profile = useProfile(state.checks);
+  const { syncWishlist } = api;
+  const wishlist = profile.profile?.wishlist;
+  useEffect(() => {
+    if (wishlist) syncWishlist(wishlist);
+  }, [wishlist, syncWishlist]);
 
   if (compact) return <CompactView api={api} chat={chat} />;
 
@@ -68,7 +74,7 @@ export function Dashboard() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           <div className="order-2 lg:order-1">
             <div className="flex flex-col gap-6">
-              <MemoryPanel api={profile} />
+              <MemoryPanel api={profile} recalls={state.recalls} />
               <MissionsPanel missions={state.missions} onAdd={api.addMission} />
               <RunsPanel runs={state.runs} />
             </div>

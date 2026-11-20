@@ -119,4 +119,6 @@ export interface AutopilotApi {
   approve(approvalId: string): void;
   decline(approvalId: string): void;
   addMission(title: string, maxPrice: number): void;
+  /** Contract: missions mirror the profile wishlist (id = wishlist id, maxPrice = targetPrice). No-op when ids are unchanged. */
+  syncWishlist(items: { id: string; title: string; targetPrice: number }[]): void;
 }
