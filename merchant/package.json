@@ -1,0 +1,12 @@
+{
+  "name": "merchant-sandbox",
+  "version": "1.0.0",
+  "description": "SafeCart adversarial merchant sandbox for Personal Agents Hackathon (Task S-J3, ag)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "ag (Antigravity)",
+  "license": "MIT"
+}
