@@ -14,7 +14,7 @@
   };
   const KIND = { user: 'Shopper', wish: 'Wishlist item', owned: 'Owned item', recall: 'CPSC recall', buy: 'Purchase', src: 'Source checked', inj: 'Blocked injection', claim: 'Refund request' };
   const nodes = new Map(); const links = new Map(); const hidden = new Set();
-  let fg = null, hover = null, hiNodes = new Set(), hiLinks = new Set();
+  let fg = null, hover = null, sel = null, query = '', lit = false, hiNodes = new Set(), hiLinks = new Set();
   let mode = 'sphere', spread = 1, spin = true, flow = true, showLabels = true, fitted = false, fitN = 0, pending = null, holdSpinUntil = 0, focusNode = null;
   const idOf = (x) => (typeof x === 'object' ? x.id : x);
 
@@ -101,10 +101,10 @@
     checked: ['242,181,82', .22], wants: ['200,210,225', .32], owns: ['200,210,225', .32],
   };
   const FLOWING = new Set(['checked', 'paid', 'published', 'blocked by', 'explained', 'sent to', 'refund requested']);
-  const nColor = (n) => (hover && !hiNodes.has(n) ? '#2a2f37' : (n.type === 'wish' || n.type === 'owned') && n.status === 'recalled' ? C.recall : C[n.type]);
+  const nColor = (n) => (lit && !hiNodes.has(n) ? '#2a2f37' : (n.type === 'wish' || n.type === 'owned') && n.status === 'recalled' ? C.recall : C[n.type]);
   const lColor = (l) => {
     const [rgb, a] = LINK[l.kind] ?? ['200,210,225', .3];
-    if (hover) return hiLinks.has(l) ? `rgba(${rgb},${Math.min(1, a + .45)})` : 'rgba(255,255,255,.03)';
+    if (lit) return hiLinks.has(l) ? `rgba(${rgb},${Math.min(1, a + .45)})` : 'rgba(255,255,255,.03)';
     return `rgba(${rgb},${a})`;
   };
 
@@ -151,17 +151,17 @@
       const near = Math.hypot(n.x - cam.position.x, n.y - cam.position.y, n.z - cam.position.z);
       const front = ((n.x - cam.position.x) * fx + (n.y - cam.position.y) * fy + (n.z - cam.position.z) * fz) / fl;
       const always = n.type === 'user' || n.type === 'src' || n.type === 'recall' || n.type === 'buy';
-      const show = showLabels && front > 0 && (always || hiNodes.has(n) || near < fl * 0.6) && (!hover || hiNodes.has(n));
+      const show = showLabels && front > 0 && (always || hiNodes.has(n) || near < fl * 0.6) && (!lit || hiNodes.has(n));
       if (!show) continue;
       const p = fg.graph2ScreenCoords(n.x, n.y, n.z);
       if (p.x < -50 || p.y < -50 || p.x > W + 50 || p.y > H + 50) continue;
       let s = spans.get(n.id);
       if (!s) { s = document.createElement('span'); spans.set(n.id, s); lab.appendChild(s); }
-      s.className = `k-${n.type}`;
+      s.className = `k-${n.type}${n === sel || n === hover ? ' sel' : ''}`;
       const txt = n.label.length > 30 ? n.label.slice(0, 28) + '…' : n.label;
       if (s.textContent !== txt) s.textContent = txt;
       const depth = Math.max(0.28, Math.min(1, 1.55 - near / (fl * 1.25)));
-      s.style.opacity = hover ? 1 : depth.toFixed(2);
+      s.style.opacity = lit ? 1 : depth.toFixed(2);
       const r = Math.cbrt(VAL[n.type]) * 4 * (fl / Math.max(near, 1)) * 1.1;
       s.style.left = `${p.x}px`; s.style.top = `${p.y + Math.min(26, 8 + r)}px`;
       seen.add(n.id);
@@ -178,14 +178,14 @@
     for (const n of nodes.values()) {
       const o = n.__threeObj; if (!o) continue;
       const m = o.material;
-      if (m && m.emissive && m.__glow !== nColor(n)) { m.emissive.set(nColor(n)); m.emissiveIntensity = hover && !hiNodes.has(n) ? 0.05 : 0.42; m.__glow = nColor(n); }
+      if (m && m.emissive && m.__glow !== nColor(n)) { m.emissive.set(nColor(n)); m.emissiveIntensity = lit && !hiNodes.has(n) ? 0.05 : 0.42; m.__glow = nColor(n); }
       const age = Math.min(1, (now - n.born) / 800); let sc = age < 1 ? Math.max(0.01, ease(age)) : 1;
       if (n.type === 'recall' || n.status === 'recalled') sc *= 1 + 0.16 * Math.sin(now / 330);
       if (n.type === 'claim' && n.replied) sc *= 1 + 0.06 * Math.sin(now / 520);
-      if (hover === n) sc *= 1.25;
+      if (hover === n || sel === n) sc *= 1.3;
       o.scale.set(sc, sc, sc);
     }
-    if (spin && !hover && now > holdSpinUntil && !focusNode) {
+    if (spin && !hover && !lit && now > holdSpinUntil && !focusNode) {
       const cam = fg.camera(); const tgt = fg.controls().target;
       const dx = cam.position.x - tgt.x, dz = cam.position.z - tgt.z; const r = Math.hypot(dx, dz); const a = Math.atan2(dx, dz) + 0.0018;
       cam.position.x = tgt.x + r * Math.sin(a); cam.position.z = tgt.z + r * Math.cos(a); cam.lookAt(tgt);
@@ -211,7 +211,7 @@
     g.hidden = false;
     const ob = document.getElementById('gOpen'); if (ob) ob.onclick = () => { const i = S.runs.findIndex((r) => r.action?.ref === n.ref); if (i >= 0) SC.openRun(i); };
     const om = document.getElementById('gMail'); if (om) om.onclick = () => SC.openRefund?.(n.claimRef);
-    document.getElementById('gBack').onclick = () => { card(null); focusNode = null; fit(); };
+    document.getElementById('gBack').onclick = () => { card(null); focusNode = null; sel = null; setHi(); fit(); };
   }
 
   function stats() {
@@ -231,6 +231,18 @@
     fg.cameraPosition({ x: (c.x / d) * want, y: (c.y / d) * want, z: (c.z / d) * want }, { x: 0, y: 0, z: 0 }, 900); // frame the core, let outer sources graze the edge
   }
   function size() { if (fg && el.clientWidth) fg.width(el.clientWidth).height(el.clientHeight); }
+  const matches = (n) => !!query && `${n.label} ${n.title ?? ''} ${n.id} ${KIND[n.type]}`.toLowerCase().includes(query);
+  function setHi() { // one highlight path for hover, click selection and search
+    hiNodes = new Set(); hiLinks = new Set();
+    const seeds = hover ? [hover] : sel ? [sel] : query ? [...nodes.values()].filter((n) => !hidden.has(n.type) && matches(n)) : [];
+    for (const n of seeds) { hiNodes.add(n); for (const l of links.values()) if (l.source === n || l.target === n) { hiLinks.add(l); hiNodes.add(l.source); hiNodes.add(l.target); } }
+    lit = seeds.length > 0 || !!query; restyle();
+  }
+  function flyTo(n) {
+    focusNode = n; sel = n; setHi(); card(n);
+    const d = Math.hypot(n.x, n.y, n.z);
+    fg?.cameraPosition(d < 1 ? { x: 0, y: 0, z: 150 } : { x: n.x * (1 + 90 / d), y: n.y * (1 + 90 / d), z: n.z * (1 + 90 / d) }, n, 1100);
+  }
   function restyle() { if (!fg) return; fg.nodeColor(fg.nodeColor()).linkColor(fg.linkColor()).linkWidth(fg.linkWidth()).linkDirectionalParticles(fg.linkDirectionalParticles()); }
 
   // ---------- mount ----------
@@ -260,18 +272,14 @@
       .d3VelocityDecay(0.3)
       .warmupTicks(40)
       .cooldownTicks(260)
-      .onNodeHover((n) => {
-        hover = n || null; hiNodes = new Set(); hiLinks = new Set();
-        if (n) { hiNodes.add(n); for (const l of links.values()) if (l.source === n || l.target === n) { hiLinks.add(l); hiNodes.add(l.source); hiNodes.add(l.target); } }
-        el.style.cursor = n ? 'pointer' : 'grab'; restyle();
-      })
+      .onNodeHover((n) => { hover = n || null; setHi(); el.style.cursor = n ? 'pointer' : 'grab'; })
       .onNodeClick((n) => {
-        focusNode = n; card(n);
+        focusNode = n; sel = n; setHi(); card(n);
         const d = Math.hypot(n.x, n.y, n.z);
         const pos = d < 1 ? { x: 0, y: 0, z: 150 } : { x: n.x * (1 + 90 / d), y: n.y * (1 + 90 / d), z: n.z * (1 + 90 / d) };
         fg.cameraPosition(pos, n, 1100);
       })
-      .onBackgroundClick(() => { card(null); focusNode = null; })
+      .onBackgroundClick(() => { card(null); focusNode = null; sel = null; setHi(); })
       .onNodeDragEnd((n) => { n.fx = n.x; n.fy = n.y; n.fz = n.z; holdSpinUntil = performance.now() + 2500; })
       .onEngineStop(() => { if (!fitted || nodes.size !== fitN) { fitted = true; fitN = nodes.size; if (!focusNode) fit(); } });
     fg.d3Force('shells', shells());
@@ -302,7 +310,13 @@
     fg.d3ReheatSimulation(); fitted = false;
   };
   $('gRelease').onclick = () => { for (const n of nodes.values()) { n.fx = n.fy = n.fz = undefined; } fg?.d3ReheatSimulation(); };
-  $('gFit').onclick = () => { focusNode = null; card(null); fit(); };
+  $('gFit').onclick = () => { focusNode = null; sel = null; setHi(); card(null); fit(); };
+  $('gSearch').oninput = (e) => { query = e.target.value.trim().toLowerCase(); sel = null; focusNode = null; card(null); setHi(); };
+  $('gSearch').onkeydown = (e) => {
+    if (e.key === 'Escape') { e.target.value = ''; query = ''; setHi(); e.target.blur(); }
+    if (e.key === 'Enter') { const hit = [...nodes.values()].find((n) => !hidden.has(n.type) && matches(n)); if (hit) flyTo(hit); }
+    e.stopPropagation(); // typing here must not fire the demo hotkeys
+  };
   $('gkeys').onclick = (e) => {
     const b = e.target.closest('button[data-type]'); if (!b) return;
     const t = b.dataset.type; if (hidden.has(t)) hidden.delete(t); else hidden.add(t);
