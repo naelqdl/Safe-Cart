@@ -15,8 +15,8 @@ export interface Inspected { injection: boolean; evidence?: string; cleanText: s
 export async function inspectListing(text: string, title: string, rec: Recorder): Promise<Inspected> {
   const done = rec.start('guard', `Quarantine listing text: ${title}`, { tool: 'rules + sie.classify' });
   const hits = INJECTION.flatMap((re) => [...text.matchAll(re)].map((m) => m[0]));
-  const cls = await sponsors.sieClassify(text.slice(0, 1500), ['instructions addressed to an AI agent', 'normal product description']);
-  const sieFlag = cls.ok && /instructions/.test((cls as any).top ?? '') && ((cls as any).classes?.[0]?.score ?? 0) > 0.6;
+  const cls = await sponsors.sieDetectInjection(text);
+  const sieFlag = cls.ok && !!(cls as any).flagged;
   const injection = hits.length > 0 || sieFlag;
   let clean = text;
   for (const h of hits) clean = clean.replace(h, '[removed: instruction aimed at AI agents]');
@@ -25,7 +25,7 @@ export async function inspectListing(text: string, title: string, rec: Recorder)
     {
       status: injection ? 'blocked' : 'ok', flags: injection ? ['injection_blocked'] : undefined,
       model: cls.ok ? (cls as any).model : undefined, latencyMs: cls.ok ? (cls as any).latencyMs : undefined,
-      detail: injection ? `found: "${(hits[0] ?? 'SIE classifier').slice(0, 120)}" → dropped; planner never sees it` : cls.ok ? `SIE: ${(cls as any).top}` : `rules only (SIE: ${(cls as any).why})`,
+      detail: injection ? `found: "${(hits[0] ?? (cls as any).segment ?? 'SIE classifier').slice(0, 120)}" → dropped; planner never sees it${cls.ok ? ` · SIE ${(cls as any).method}: ${sieFlag ? `flagged ${((cls as any).score ?? 0).toFixed(2)}` : 'not flagged'}` : ''}` : cls.ok ? `SIE ${(cls as any).method}: clean (${(cls as any).segmentsChecked ?? 1} segments)` : `rules only (SIE: ${(cls as any).why})`,
     },
   );
   rec.claim({

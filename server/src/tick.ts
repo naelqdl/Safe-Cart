@@ -117,6 +117,7 @@ async function sweepOwned(emit: Emit, p: Policy, spent: () => number) {
       recordWrite(rec, 'act', 'Drafted refund claim letter', letter);
       const claimDone = rec.start('act', `Filing refund claim for ${o.title}`, { tool: 'merchant /api/claims' });
       const claim = await fileClaim(o.id, recallId, o.orderRef, letter.text);
+      state.claims.push({ claimRef: claim.claimRef, ownedItemId: o.id, orderRef: o.orderRef, recallId, letter: letter.text, letterModel: letter.model, simulated: claim.simulated, at: new Date().toISOString() });
       claimDone(`Refund claim ${claim.claimRef} filed${claim.simulated ? ' (SIMULATED: store offline)' : ''}`, { detail: `remedy: ${recall.remedy.slice(0, 140)}` });
       state.safety.set(o.id, { status: 'recalled', sources: [{ label: `CPSC recall ${recallId}`, url: recall.url }], checkedAt: new Date().toISOString(), recallId });
       const a = alert(emit, { id: `alert_${recallId}_${o.id}`, recallId, recallTitle: recall.title, hazard: recall.hazard, remedy: recall.remedy, url: recall.url, itemTitle: o.title, itemKind: 'owned', action: 'refund_claim_filed', claimRef: claim.claimRef });

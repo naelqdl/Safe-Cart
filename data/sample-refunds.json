@@ -1,0 +1,78 @@
+{
+  "source": "Recall facts are real: CPSC API (saferproducts.gov, RecallDateStart=2026-10-01), pulled 2026-11-20. Letters, order numbers and store replies are made up for the demo and labelled Sample. Copied from web/src/lib/agent/sample-refunds.ts (nc, PR #13).",
+  "claims": [
+    {
+      "claimRef": "SAMPLE-11067",
+      "itemTitle": "Kidsview Infant Bouncer",
+      "to": "Kidsview recall support",
+      "orderRef": "ORD-S1",
+      "recallId": "11067",
+      "recallTitle": "Kidsview Recalls Infant Bouncers Due to Risk of Collapse and Impact Injury to Infants",
+      "hazard": "The bouncers can collapse while in use, posing a risk of impact injury to infants in the bouncer.",
+      "remedy": "Consumers should stop using the recalled infant bouncers immediately and contact Kidsview for an Amazon gift card. Consumers will be asked to check if their infant bouncer is recalled by viewing the date code located on a label on the back of the bouncer’s seat. Consumers with recalled bouncers will be instructed to write “RECALLED” on the product’s fabric seat with permanent marker, take a photo of it, including the label with the date code in the photo and email to haimaoziying@163.com.",
+      "url": "https://cpsc.gov/Recalls/2027/Kidsview-Recalls-Infant-Bouncers-Due-to-Risk-of-Collapse-and-Impact-Injury-to-Infants",
+      "status": "refund_approved",
+      "at": "2026-11-19T23:00:00.000Z",
+      "message": "Hello Kidsview recall support. On behalf of Maya Chen: order ORD-S1 included the Kidsview Infant Bouncer, which is under CPSC recall 11067 (\"Kidsview Recalls Infant Bouncers Due to Risk of Collapse and Impact Injury to Infants\", https://cpsc.gov/Recalls/2027/Kidsview-Recalls-Infant-Bouncers-Due-to-Risk-of-Collapse-and-Impact-Injury-to-Infants). Per the recall remedy, please issue a full refund. Thank you. SafeCart, on behalf of Maya Chen.",
+      "reply": {
+        "at": "2026-11-20T19:00:00.000Z",
+        "text": "Hello Maya, thank you for contacting Kidsview about recall 11067. We have approved a full refund to your original payment method; please allow 5-7 business days. Please stop using the product and follow the disposal steps on the recall page. (Kidsview recall support)"
+      },
+      "sample": true
+    },
+    {
+      "claimRef": "SAMPLE-11065",
+      "itemTitle": "Qpancy Children’s Pajama Sets",
+      "to": "Qpancy recall support",
+      "orderRef": "ORD-S2",
+      "recallId": "11065",
+      "recallTitle": "Qpancy Recalls Children’s Pajama Sets Due to Risk of Serious Injury or Death from Burn Hazard; Violate Mandatory Standards for Children’s Sleepwear",
+      "hazard": "The recalled children’s pajama sets violate the mandatory safety standards for children’s sleepwear posing a risk of serious burn injuries.",
+      "remedy": "Consumers should stop using the recalled pajama sets immediately and contact Qpancy for a full refund. Consumers will be asked to cut the pajama in half and send a photo of the destroyed pajamas to qpancyrecall@outlook.com. Consumers should then dispose of the destroyed product.",
+      "url": "https://cpsc.gov/Recalls/2027/Qpancy-Recalls-Childrens-Pajama-Sets-Due-to-Risk-of-Serious-Injury-or-Death-from-Burn-Hazard-Violate-Mandatory-Standards-for-Childrens-Sleepwear",
+      "status": "info_requested",
+      "at": "2026-11-20T00:00:00.000Z",
+      "message": "Hello Qpancy recall support. On behalf of Maya Chen: order ORD-S2 included the Qpancy Children’s Pajama Sets, which is under CPSC recall 11065 (\"Qpancy Recalls Children’s Pajama Sets Due to Risk of Serious Injury or Death from Burn Hazard; Violate Mandatory Standards for Children’s Sleepwear\", https://cpsc.gov/Recalls/2027/Qpancy-Recalls-Childrens-Pajama-Sets-Due-to-Risk-of-Serious-Injury-or-Death-from-Burn-Hazard-Violate-Mandatory-Standards-for-Childrens-Sleepwear). Per the recall remedy, please issue a full refund. Thank you. SafeCart, on behalf of Maya Chen.",
+      "reply": {
+        "at": "2026-11-21T02:00:00.000Z",
+        "text": "Hello Maya, we received your request about recall 11065. To process the refund, please reply with a photo of the pajamas cut in half, as described in the recall notice. (Qpancy recall support)"
+      },
+      "sample": true
+    },
+    {
+      "claimRef": "SAMPLE-11068",
+      "itemTitle": "CHE-US Magnetic Robot Toys",
+      "to": "CHE-US recall support",
+      "orderRef": "ORD-S3",
+      "recallId": "11068",
+      "recallTitle": "CHE-US Recalls Magnetic Robot Toys Due to Risk of Serious Injury or Death from Magnet Ingestion; Violate Mandatory Standard for Toys",
+      "hazard": "The recalled magnetic stick figures violate the mandatory standard for toys because when pulled apart, the figures’ arms and legs liberate high-powered magnets posing an ingestion hazard to children. When high-powered magnets are swallowed, the ingested magnets can attract each other, or other metal objects, and become lodged in the digestive system. This can result in perforations, twisting, and/or blockage of the intestines, blood poisoning and death.",
+      "remedy": "Consumers should stop using the stick figures immediately, take them away from children and contact CHE-US for a full refund. Consumers will be asked to send a photo of the toys in the trash to CHE-USMagneticRobotToysRecall@outlook.com. Consumers should then dispose of the recalled product.",
+      "url": "https://cpsc.gov/Recalls/2027/CHE-US-Recalls-Magnetic-Robot-Toys-Due-to-Risk-of-Serious-Injury-or-Death-from-Magnet-Ingestion-Violate-Mandatory-Standard-for-Toys",
+      "status": "refund_approved",
+      "at": "2026-11-20T01:00:00.000Z",
+      "message": "Hello CHE-US recall support. On behalf of Maya Chen: order ORD-S3 included the CHE-US Magnetic Robot Toys, which is under CPSC recall 11068 (\"CHE-US Recalls Magnetic Robot Toys Due to Risk of Serious Injury or Death from Magnet Ingestion; Violate Mandatory Standard for Toys\", https://cpsc.gov/Recalls/2027/CHE-US-Recalls-Magnetic-Robot-Toys-Due-to-Risk-of-Serious-Injury-or-Death-from-Magnet-Ingestion-Violate-Mandatory-Standard-for-Toys). Per the recall remedy, please issue a full refund. Thank you. SafeCart, on behalf of Maya Chen.",
+      "reply": {
+        "at": "2026-11-21T07:00:00.000Z",
+        "text": "Hello Maya, your refund for recall 11068 is approved. You will receive it within 7-10 business days. Thank you for helping keep children safe. (CHE-US recall support)"
+      },
+      "sample": true
+    },
+    {
+      "claimRef": "SAMPLE-11072",
+      "itemTitle": "Ororo PD10K-Pro Rechargeable Lithium-Ion Battery Packs",
+      "to": "Ororo recall support",
+      "orderRef": "ORD-S4",
+      "recallId": "11072",
+      "recallTitle": "Ororo Recalls Rechargeable Lithium-Ion Battery Packs Due to Risk of Serious Injury from Fire and Burn Hazards",
+      "hazard": "The recalled lithium-ion battery packs can overheat, posing a risk of serious injury from fire and burn hazards.",
+      "remedy": "Consumers should stop using the battery packs immediately and contact ororo for a full refund. Consumers will be asked to go to Ororowear.com/pd10k-pro-recall to register and to receive disposal instructions. Once registered, consumers should dispose of the recalled battery packs in accordance with local and state regulations. Note: Do not throw this recalled lithium-ion battery or device in the trash, the general recycling stream (e.g., street-level or curbside recycling bins), or used battery recycling boxes found at various retail and home improvement stores. Recalled lithium-ion batteries must be disposed of differently than other batteries, because they present a greater risk of fire. Your municipal household hazardous waste (HHW) collection center may accept this recalled lithium-ion battery or device for disposal. Before taking your battery or device to a HHW collection center, contact that office ahead of time and ask whether it accepts recalled lithium-ion batteries. If it does not, contact your municipality for further guidance.",
+      "url": "https://cpsc.gov/Recalls/2027/Ororo-Recalls-Rechargeable-Lithium-Ion-Battery-Packs-Due-to-Risk-of-Serious-Injury-from-Fire-and-Burn-Hazards",
+      "status": "filed",
+      "at": "2026-11-20T02:00:00.000Z",
+      "message": "Hello Ororo recall support. On behalf of Maya Chen: order ORD-S4 included the Ororo PD10K-Pro Rechargeable Lithium-Ion Battery Packs, which is under CPSC recall 11072 (\"Ororo Recalls Rechargeable Lithium-Ion Battery Packs Due to Risk of Serious Injury from Fire and Burn Hazards\", https://cpsc.gov/Recalls/2027/Ororo-Recalls-Rechargeable-Lithium-Ion-Battery-Packs-Due-to-Risk-of-Serious-Injury-from-Fire-and-Burn-Hazards). Per the recall remedy, please issue a full refund. Thank you. SafeCart, on behalf of Maya Chen.",
+      "reply": null,
+      "sample": true
+    }
+  ]
+}

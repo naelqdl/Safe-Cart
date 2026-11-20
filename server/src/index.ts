@@ -1,6 +1,8 @@
 // SafeCart agent backend (S-J4, owner cc) on :8000. Contract: K-dashboard v1 + plans/*.md "Server HTTP".
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { loadSeed, seed } from './data.ts';
+import { DATA, loadSeed, seed } from './data.ts';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { getListing, merchantUp, resetStore, setSale } from './adapters/merchant.ts';
 import { getPolicy, initPolicy } from './adapters/policy.ts';
 import { backend, backendNote, initStore, store } from './adapters/store.ts';
@@ -131,6 +133,24 @@ const server = createServer(async (req, res) => {
       const b = await body(req);
       state.guardOverride = b.on === undefined ? undefined : !!b.on;
       return json(res, 200, { ok: true, recallGuard: state.guardOverride ?? 'statsig/default' });
+    }
+    if (req.method === 'GET' && url.pathname === '/refunds') { // store claim log ⋈ our claim letters ⋈ recall facts (web RefundClaim shape) + sample requests on real CPSC recalls
+      const titles = new Map(seed.owned.map((o) => [o.id, o.title]));
+      const recalls = new Map(seed.recalls.map((r) => [r.recallId, r]));
+      let storeClaims: any[] | null = null;
+      try { const r = await fetch(`${(process.env.MERCHANT_URL ?? 'http://localhost:3100').replace(/\/$/, '')}/api/admin/log`, { signal: AbortSignal.timeout(3000) }); if (r.ok) storeClaims = (await r.json()).claims ?? []; } catch { /* store offline */ }
+      const mine = new Map(state.claims.map((c) => [c.claimRef, c]));
+      const base: any[] = storeClaims ?? state.claims.map((c) => ({ ...c, status: 'filed', message: c.letter, reply: null }));
+      const claims = base.map((c) => {
+        const m = mine.get(c.claimRef); const r = recalls.get(c.recallId);
+        return { claimRef: c.claimRef, itemTitle: titles.get(c.ownedItemId) ?? c.ownedItemId ?? 'Unknown item', ownedItemId: c.ownedItemId ?? null, to: 'Demo Baby Store', orderRef: c.orderRef ?? null,
+          recallId: c.recallId ?? null, recallTitle: r?.title, hazard: r?.hazard, remedy: r?.remedy, url: r?.url,
+          status: storeClaims ? c.status : 'filed', at: c.at, message: c.message ?? m?.letter ?? null, reply: c.reply ?? null,
+          letterModel: m?.letterModel ?? null, storeOffline: !storeClaims };
+      });
+      let samples: any[] = [];
+      try { samples = JSON.parse(readFileSync(join(DATA, 'sample-refunds.json'), 'utf8')).claims ?? []; } catch { /* optional */ }
+      return json(res, 200, { claims, samples, source: storeClaims ? 'merchant /api/admin/log' : 'agent (store offline)' });
     }
     if (req.method === 'GET' && url.pathname === '/ledger') return json(res, 200, state.ledger.slice(-200));
     json(res, 404, { error: `no route ${req.method} ${url.pathname}` });
