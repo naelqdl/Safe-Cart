@@ -4,10 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SafeCart Autopilot</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="graph-zones.css?v=6">
 </head>
 <body>
   <header class="top">
@@ -24,43 +22,48 @@
       <button data-page="missions"><i data-ic="crosshair"></i>Missions</button>
     </nav>
     <div class="top-right">
-      <span class="sponsors">SingleStore · Senso · Superlinked · Statsig · Amplitude</span>
-      <span class="status" id="status"><span class="dot"></span><span id="statusText">AUTOPILOT OFF</span></span>
+      <button class="status" id="status" title="Turn Autopilot on or off (A)"><span class="dot"></span><span id="statusText">AUTOPILOT OFF</span><span class="mini-sw"></span></button>
     </div>
   </header>
 
   <main class="studio">
     <section class="stage" id="stage">
-      <!-- ===== Autopilot: live sensor view ===== -->
-      <div class="view sensor" data-view="autopilot">
-        <div class="radar"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="sweep"></div></div>
-        <div class="s-left">
+      <!-- ===== Autopilot: pipeline map ===== -->
+      <div class="view home" data-view="autopilot">
+        <section class="hero">
           <div class="overlay" id="overlay">
             <div class="eyebrow" id="ovEyebrow">Standing by</div>
             <h2 id="ovTitle">Protecting what Maya buys, and what she owns.</h2>
             <div id="ovExtra"></div>
-            <ul id="ovList">
-              <li>Every purchase is checked against U.S. CPSC recalls first</li>
-              <li>Owned items are re-checked when a new recall is published</li>
-              <li>Payments are capped by a Stripe spending token</li>
-            </ul>
+            <ul id="ovList"><li>Every purchase is checked against U.S. CPSC recalls first</li></ul>
           </div>
-          <div class="target" id="target" hidden><span class="tag" id="tgTag">READING LISTING</span><div class="name" id="tgName"></div><div class="meta" id="tgMeta"></div></div>
+        </section>
+        <section class="flowmap" id="flowmap">
+          <button class="fnode ends" data-f="watch"><span class="fic"><i data-ic="heart" data-s="22"></i></span><b>Maya's lists</b><small data-m="watch">Wishlist + owned</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="perceive" data-f="perceive"><span class="fic"><i data-ic="scan-eye" data-s="22"></i></span><b>Perceive</b><small data-m="perceive">Prices + listings</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="verify" data-f="verify"><span class="fic"><i data-ic="shield-check" data-s="22"></i></span><b>Verify</b><small data-m="verify">CPSC · Senso · table</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="decide" data-f="decide"><span class="fic"><i data-ic="scale" data-s="22"></i></span><b>Decide</b><small data-m="decide">Fixed policy rules</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="act" data-f="act"><span class="fic"><i data-ic="credit-card" data-s="22"></i></span><b>Act</b><small data-m="act">Stripe TEST · refunds</small></button>
+          <span class="fline"></span>
+          <button class="fnode ends" data-f="safe"><span class="fic"><i data-ic="shield" data-s="22"></i></span><b>Maya protected</b><small data-m="safe">0 recalls caught</small></button>
+        </section>
+        <p class="fhint" id="fhint">Tap any step to see what the agent did there.</p>
+        <section class="fdetail" id="fdetail" hidden>
+          <div class="fd-main"><div id="fdBody"></div>
+            <div class="target" id="target" hidden><span class="tag" id="tgTag">READING LISTING</span><div class="name" id="tgName"></div><div class="meta" id="tgMeta"></div></div>
+          </div>
+          <div class="fd-log"><div class="feed" id="feed"></div></div>
+        </section>
+        <div class="carousel" id="carousel" hidden>
+          <button class="arrow" id="prev" aria-label="Previous run">‹</button>
+          <div class="dots" id="dots"></div>
+          <button class="arrow" id="next" aria-label="Next run">›</button>
         </div>
-        <div class="s-right"><div class="feed" id="feed"></div></div>
-        <div class="s-bottom">
-          <div class="pipeline">
-            <div class="stagebox" data-k="perceive"><div class="k"><i data-ic="scan-eye" data-s="16"></i><b>01</b> Perceive</div><div class="v">Read prices and listings (untrusted)</div></div>
-            <div class="stagebox" data-k="verify"><div class="k"><i data-ic="shield-check" data-s="16"></i><b>02</b> Verify</div><div class="v">CPSC recalls · Senso · recall table</div></div>
-            <div class="stagebox" data-k="decide"><div class="k"><i data-ic="scale" data-s="16"></i><b>03</b> Decide</div><div class="v">Fixed policy rules, explained by Claude</div></div>
-            <div class="stagebox" data-k="act"><div class="k"><i data-ic="credit-card" data-s="16"></i><b>04</b> Act</div><div class="v">Stripe TEST payment, capped</div></div>
-          </div>
-          <div class="carousel" id="carousel" hidden>
-            <button class="arrow" id="prev" aria-label="Previous run">‹</button>
-            <div class="dots" id="dots"></div>
-            <button class="arrow" id="next" aria-label="Next run">›</button>
-          </div>
-        </div>
+        <p class="powered">Real: CPSC recalls · Stripe TEST · Claude · SingleStore · Senso · Superlinked · Statsig · Persona. Simulated: the store, Maya, her inbox.</p>
       </div>
 
       <!-- ===== Graph: trust graph ===== -->
@@ -108,14 +111,18 @@
       <div class="view page" data-view="missions" hidden><div class="pg" id="pgMissions"></div></div>
 
       <button class="chatbtn" id="chatBtn" aria-label="Chat with SafeCart">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 10h8M8 13h5"/></svg>
+        <i data-ic="message-square" data-s="19"></i>
       </button>
-      <div class="chat" id="chat">
+    </section>
+
+    <aside class="chat" id="chat" aria-label="Chat with SafeCart">
+      <div class="chat-in">
+        <header class="chat-h"><span><i data-ic="message-square" data-s="16"></i>Ask SafeCart</span><button id="chatClose" aria-label="Close chat"><i data-ic="x" data-s="16"></i></button></header>
         <div class="log" id="chatLog"><div class="ai">Hi Maya. Ask me "is my high chair safe?" or "what did you buy and why?"</div></div>
         <div class="quick"><button data-q="What did you buy and why?">What did you buy?</button><button data-q="Is my high chair safe?">Is my high chair safe?</button><button data-q="check now">Check now</button></div>
         <form id="chatForm"><input id="chatInput" placeholder="Message the agent…" autocomplete="off"><button>Send</button></form>
       </div>
-    </section>
+    </aside>
 
     <!-- ===== Persistent control panel ===== -->
     <aside class="panel">
@@ -133,23 +140,27 @@
         </div>
         <div class="rows" id="rows"><div class="empty">Loading…</div></div>
       </div>
-      <button class="linkrow" id="policyRow"><span>Purchase policy <span class="sub" id="policySub"></span></span><span>›</span></button>
-      <div class="policy" id="policy" hidden></div>
-      <div class="policy">
-        <div class="item"><span>Autopilot <span style="color:var(--muted)">checks every 12 s</span></span><button class="switch" id="autoSw" aria-label="Autopilot"></button></div>
-        <div class="item"><span>Recall guard <span style="color:var(--muted)">off = naive agent</span></span><button class="switch on" id="guardSw" aria-label="Recall guard"></button></div>
-      </div>
-      <p class="fine"><b>Real:</b> CPSC recall records, Stripe TEST payments, Claude explanations. <b>Simulated:</b> the store, Maya and her inbox. Agent API: <span id="apiLabel"></span></p>
       <div class="dock">
         <button class="cta" id="cta">Engage Autopilot</button>
-        <div class="demo-head"><span class="section-label">Demo controls · keys 1 2 3 4 0 · G graph</span><a href="#" id="checkNow">Check now (C)</a></div>
-        <div class="demo">
-          <button id="dSale"><i data-ic="percent" data-s="15"></i><span>Stroller 30% off</span><kbd>1</kbd></button>
-          <button id="dRecall"><i data-ic="siren" data-s="15"></i><span>Publish recall</span><kbd>2</kbd></button>
-          <button id="dInject"><i data-ic="bug" data-s="15"></i><span>Plant injection</span><kbd>3</kbd></button>
-          <button id="dBig"><i data-ic="fingerprint" data-s="15"></i><span>Big purchase $199</span><kbd>4</kbd></button>
-          <button id="dReset"><i data-ic="rotate-ccw" data-s="15"></i><span>Reset demo</span><kbd>0</kbd></button>
-        </div>
+        <details class="demo-box" id="demoBox">
+          <summary><span><i data-ic="sparkles" data-s="15"></i>Demo controls</span><span class="keys">keys 1–4 · 0</span></summary>
+          <div class="demo-in">
+            <div class="demo">
+              <button id="dSale"><i data-ic="percent" data-s="15"></i><span>Stroller 30% off</span><kbd>1</kbd></button>
+              <button id="dRecall"><i data-ic="siren" data-s="15"></i><span>Publish recall</span><kbd>2</kbd></button>
+              <button id="dInject"><i data-ic="bug" data-s="15"></i><span>Plant injection</span><kbd>3</kbd></button>
+              <button id="dBig"><i data-ic="fingerprint" data-s="15"></i><span>Big purchase $199</span><kbd>4</kbd></button>
+              <button id="dReset"><i data-ic="rotate-ccw" data-s="15"></i><span>Reset demo</span><kbd>0</kbd></button>
+            </div>
+            <div class="policy">
+              <div class="item"><span>Autopilot <span style="color:var(--muted)">checks every 12 s</span></span><button class="switch" id="autoSw" aria-label="Autopilot"></button></div>
+              <div class="item"><span>Recall guard <span style="color:var(--muted)">off = naive agent</span></span><button class="switch on" id="guardSw" aria-label="Recall guard"></button></div>
+            </div>
+            <button class="linkrow" id="policyRow"><span>Purchase policy <span class="sub" id="policySub"></span></span><span>›</span></button>
+            <div class="policy" id="policy" hidden></div>
+            <div class="demo-head"><a href="#" id="checkNow">Check now (C)</a><span class="fine">Agent API: <span id="apiLabel"></span></span></div>
+          </div>
+        </details>
       </div>
     </aside>
   </main>
@@ -157,11 +168,12 @@
   <div class="sheet-bg" id="sheetBg"></div>
   <aside class="sheet" id="sheet" aria-label="Audit trail"></aside>
 
-  <script src="vendor/3d-force-graph.min.js"></script>
-  <script src="icons.js"></script>
-  <script src="app.js"></script>
-  <script src="graph.js"></script>
-  <script src="pages.js"></script>
-  <script src="compact.js"></script>
+  <script src="vendor/3d-force-graph.min.js?v=6"></script>
+  <script src="icons.js?v=6"></script>
+  <script src="app.js?v=6"></script>
+  <script src="graph.js?v=6"></script>
+  <script src="pages.js?v=6"></script>
+  <script src="compact.js?v=6"></script>
+  <script src="landing.js?v=6"></script>
 </body>
 </html>

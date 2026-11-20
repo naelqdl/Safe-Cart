@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeCart Autopilot</title>
+  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="graph-zones.css?v=13">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">SAFECART<span id="who">Maya Chen · Oakland, CA</span></div>
+    <nav class="pages" id="pages">
+      <button data-page="autopilot" class="on"><i data-ic="gauge"></i>Autopilot</button>
+      <button data-page="graph"><i data-ic="orbit"></i>Graph</button>
+      <button data-page="recalls"><i data-ic="triangle-alert"></i>Recalls<span class="ct" id="ctRecalls" hidden>0</span></button>
+      <button data-page="refunds"><i data-ic="receipt-text"></i>Refunds<span class="ct" id="ctRefunds" hidden>0</span></button>
+      <button data-page="memory"><i data-ic="brain"></i>Memory</button>
+      <button data-page="approvals"><i data-ic="shield-check"></i>Approvals<span class="ct" id="ctApprovals" hidden>0</span></button>
+      <button data-page="activity"><i data-ic="activity"></i>Activity</button>
+      <button data-page="runs"><i data-ic="list-tree"></i>Runs</button>
+      <button data-page="missions"><i data-ic="crosshair"></i>Missions</button>
+    </nav>
+    <div class="top-right">
+      <button class="status" id="status" title="Turn Autopilot on or off (A)"><span class="dot"></span><span id="statusText">AUTOPILOT OFF</span><span class="mini-sw"></span></button>
+    </div>
+  </header>
+
+  <main class="studio">
+    <section class="stage" id="stage">
+      <!-- ===== Autopilot: pipeline map ===== -->
+      <div class="view home" data-view="autopilot">
+        <section class="home2">
+          <div class="h-sum"><b id="hBig">0</b><span id="hSub">items protected</span><button class="h-check" id="hCheck">Check now</button></div>
+          <article class="h-card" id="hCard"></article>
+          <div class="h-sec"><span>Closest to target</span><button class="h-link" data-go="missions">All missions ›</button></div>
+          <div class="h-rows" id="hRows"></div>
+          <div class="h-say" id="hSay" hidden></div>
+        </section>
+        <section class="hero">
+          <div class="overlay" id="overlay">
+            <div class="eyebrow" id="ovEyebrow">Standing by</div>
+            <h2 id="ovTitle">Protecting what Maya buys, and what she owns.</h2>
+            <div id="ovExtra"></div>
+            <ul id="ovList"></ul>
+          </div>
+        </section>
+        <section class="flowmap" id="flowmap">
+          <button class="fnode ends" data-f="watch"><span class="fic"><i data-ic="heart" data-s="22"></i></span><b>Watch</b><small data-m="watch">Wishlist + owned</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="perceive" data-f="perceive"><span class="fic"><i data-ic="scan-eye" data-s="22"></i></span><b>Listing</b><small data-m="perceive">Prices + listings</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="verify" data-f="verify"><span class="fic"><i data-ic="shield-check" data-s="22"></i></span><b>Recall check</b><small data-m="verify">CPSC · Senso · table</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="decide" data-f="decide"><span class="fic"><i data-ic="scale" data-s="22"></i></span><b>Decide</b><small data-m="decide">Fixed policy rules</small></button>
+          <span class="fline"></span>
+          <button class="fnode stagebox" data-k="act" data-f="act"><span class="fic"><i data-ic="credit-card" data-s="22"></i></span><b>Pay</b><small data-m="act">Stripe TEST · refunds</small></button>
+          <span class="fline"></span>
+          <button class="fnode ends" data-f="safe"><span class="fic"><i data-ic="shield" data-s="22"></i></span><b>Done</b><small data-m="safe">0 recalls caught</small></button>
+        </section>
+        <p class="fhint" id="fhint">Tap a step for details.</p>
+        <section class="fdetail" id="fdetail" hidden>
+          <div class="fd-main"><div id="fdBody"></div>
+            <div class="target" id="target" hidden><span class="tag" id="tgTag">READING LISTING</span><div class="name" id="tgName"></div><div class="meta" id="tgMeta"></div></div>
+          </div>
+          <div class="fd-log"><div class="feed" id="feed"></div></div>
+        </section>
+        <div class="carousel" id="carousel" hidden>
+          <button class="arrow" id="prev" aria-label="Previous run">‹</button>
+          <div class="dots" id="dots"></div>
+          <button class="arrow" id="next" aria-label="Next run">›</button>
+        </div>
+        <p class="powered">Real: CPSC recalls · Stripe TEST · Claude · SingleStore · Senso · Superlinked · Statsig · Persona. Simulated: the store, Maya, her inbox.</p>
+      </div>
+
+      <!-- ===== Graph: trust graph ===== -->
+      <div class="view graph" data-view="graph" hidden>
+        <div id="graph"></div>
+        <div class="glabels" id="glabels"></div>
+        <div class="legend">
+          <h3><i data-ic="orbit" data-s="18"></i>Trust web</h3><label class="gsearch"><i data-ic="search" data-s="15"></i><input id="gSearch" placeholder="Find a node: high chair, 10328, Stripe…" autocomplete="off"></label>
+          <p>Everything SafeCart knows about Maya, every source it checked before spending, and every refund it asked for. Drag to orbit, scroll to zoom, drag a node to pin it, click to fly in. Tap a key to hide that layer.</p>
+          <div class="keys" id="gkeys">
+            <button data-type="user"><i style="background:#ffffff;color:#ffffff"></i>Maya</button>
+            <button data-type="wish"><i style="background:#9fb9da;color:#9fb9da"></i>Wishlist</button>
+            <button data-type="owned"><i style="background:#c8ced6;color:#c8ced6"></i>Owned</button>
+            <button data-type="recall"><i style="background:#ff6262;color:#ff6262"></i>Recall</button>
+            <button data-type="buy"><i style="background:#4fd39c;color:#4fd39c"></i>Purchase</button>
+            <button data-type="claim"><i style="background:#8db4e2;color:#8db4e2"></i>Refund</button>
+            <button data-type="src"><i style="background:#f2b552;color:#f2b552"></i>Source</button>
+            <button data-type="inj"><i style="background:#ff9f43;color:#ff9f43"></i>Injection</button>
+          </div>
+        </div>
+        <div class="gstats" id="gstats"></div>
+        <div class="gcard" id="gcard" hidden></div>
+        <div class="gtools">
+          <button id="gSphere" class="on"><i data-ic="globe" data-s="15"></i>Sphere</button>
+          <button id="gWeb" title="Free force layout"><i data-ic="network" data-s="15"></i>Web</button>
+          <span class="sep"></span>
+          <label>Spread <input type="range" id="gSpread" min="50" max="200" value="100"></label>
+          <span class="sep"></span>
+          <button id="gSpin" class="on" title="Slow orbit"><i data-ic="rotate-3d" data-s="15"></i>Orbit</button>
+          <button id="gFlow" class="on" title="Data flowing along checks and payments"><i data-ic="waves" data-s="15"></i>Flow</button>
+          <button id="gLabels" class="on"><i data-ic="tag" data-s="15"></i>Labels</button>
+          <button id="gBurst" title="Scatter and let it settle"><i data-ic="sparkles" data-s="15"></i>Burst</button>
+          <button id="gRelease" title="Unpin dragged nodes"><i data-ic="pin-off" data-s="15"></i>Unpin</button>
+          <button id="gFit"><i data-ic="maximize" data-s="15"></i>Fit</button>
+        </div>
+      </div>
+
+      <!-- ===== Content pages (ported from the team dashboard) ===== -->
+      <div class="view page" data-view="recalls" hidden><div class="pg" id="pgRecalls"></div></div>
+      <div class="view page" data-view="refunds" hidden><div class="pg" id="pgRefunds"></div></div>
+      <div class="view page" data-view="memory" hidden><div class="pg" id="pgMemory"></div></div>
+      <div class="view page" data-view="approvals" hidden><div class="pg" id="pgApprovals"></div></div>
+      <div class="view page" data-view="activity" hidden><div class="pg" id="pgActivity"></div></div>
+      <div class="view page" data-view="runs" hidden><div class="pg" id="pgRuns"></div></div>
+      <div class="view page" data-view="missions" hidden><div class="pg" id="pgMissions"></div></div>
+
+      <button class="chatbtn" id="chatBtn" aria-label="Chat with SafeCart">
+        <i data-ic="message-square" data-s="19"></i>
+      </button>
+    </section>
+
+    <aside class="chat" id="chat" aria-label="Chat with SafeCart">
+      <div class="chat-in">
+        <header class="chat-h"><span><i data-ic="message-square" data-s="16"></i>Ask SafeCart</span><button id="chatClose" aria-label="Close chat"><i data-ic="x" data-s="16"></i></button></header>
+        <div class="log" id="chatLog"><div class="ai">Hi Maya. Ask me "is my high chair safe?" or "what did you buy and why?"</div></div>
+        <div class="quick"><button data-q="What did you buy and why?">What did you buy?</button><button data-q="Is my high chair safe?">Is my high chair safe?</button><button data-q="check now">Check now</button></div>
+        <form id="chatForm"><input id="chatInput" placeholder="Message the agent…" autocomplete="off"><button>Send</button></form>
+      </div>
+    </aside>
+
+    <!-- ===== Persistent control panel ===== -->
+    <aside class="panel">
+      <div class="title"><h1>Autopilot</h1><p>Delivery <u>Oakland, CA 94612</u></p></div>
+      <div class="tabs" id="tabs">
+        <button data-tab="wishlist" class="on"><i data-ic="heart" data-s="15"></i>Wishlist</button>
+        <button data-tab="owned"><i data-ic="package" data-s="15"></i>Owned</button>
+        <button data-tab="receipts"><i data-ic="receipt" data-s="15"></i>Receipts</button>
+      </div>
+      <div class="card">
+        <div class="trio">
+          <div><div class="n" id="nProtected">0</div><div class="l">Items protected</div></div>
+          <div><div class="n" id="nRecalls">0</div><div class="l">Recalls caught</div></div>
+          <div><div class="n" id="nSpent">$0</div><div class="l">Spent today</div></div>
+        </div>
+        <div class="rows" id="rows"><div class="empty">Loading…</div></div>
+      </div>
+      <div class="dock">
+        <button class="cta" id="cta">Engage Autopilot</button>
+        <details class="demo-box" id="demoBox">
+          <summary><span><i data-ic="sparkles" data-s="15"></i>Demo controls</span><span class="keys">keys 1–4 · 0</span></summary>
+          <div class="demo-in">
+            <div class="demo">
+              <button id="dSale"><i data-ic="percent" data-s="15"></i><span>Stroller 30% off</span><kbd>1</kbd></button>
+              <button id="dRecall"><i data-ic="siren" data-s="15"></i><span>Publish recall</span><kbd>2</kbd></button>
+              <button id="dInject"><i data-ic="bug" data-s="15"></i><span>Plant injection</span><kbd>3</kbd></button>
+              <button id="dBig"><i data-ic="fingerprint" data-s="15"></i><span>Big purchase $199</span><kbd>4</kbd></button>
+              <button id="dReset"><i data-ic="rotate-ccw" data-s="15"></i><span>Reset demo</span><kbd>0</kbd></button>
+            </div>
+            <div class="policy">
+              <div class="item"><span>Autopilot <span style="color:var(--muted)">checks every 12 s</span></span><button class="switch" id="autoSw" aria-label="Autopilot"></button></div>
+              <div class="item"><span>Recall guard <span style="color:var(--muted)">off = naive agent</span></span><button class="switch on" id="guardSw" aria-label="Recall guard"></button></div>
+            </div>
+            <button class="linkrow" id="policyRow"><span>Purchase policy <span class="sub" id="policySub"></span></span><span>›</span></button>
+            <div class="policy" id="policy" hidden></div>
+            <div class="demo-head"><a href="#" id="checkNow">Check now (C)</a><span class="fine">Agent API: <span id="apiLabel"></span></span></div>
+          </div>
+        </details>
+      </div>
+    </aside>
+  </main>
+
+  <div class="sheet-bg" id="sheetBg"></div>
+  <aside class="sheet" id="sheet" aria-label="Audit trail"></aside>
+
+  <script src="vendor/3d-force-graph.min.js?v=13"></script>
+  <script src="icons.js?v=13"></script>
+  <script src="app.js?v=13"></script>
+  <script src="graph.js?v=13"></script>
+  <script src="pages.js?v=13"></script>
+  <script src="compact.js?v=13"></script>
+  <script src="landing.js?v=13"></script>
+</body>
+</html>
