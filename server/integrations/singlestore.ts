@@ -243,7 +243,9 @@ export async function findAlternatives(o: AlternativesQuery): Promise<Listed<Pro
   let mode: 'fulltext' | 'price' = 'price';
   if (terms) {
     try {
-      rows = await query(`SELECT *, MATCH(TABLE products) AGAINST(?) AS score FROM products WHERE ${where.join(' AND ')} ORDER BY score DESC, price ASC LIMIT ${limit}`, [terms, ...params]);
+      // FTS v2 needs field-qualified Lucene syntax ("FTS Query without a field found" otherwise)
+      const fts = `title:(${terms}) OR descr:(${terms})`;
+      rows = await query(`SELECT *, MATCH(TABLE products) AGAINST(?) AS score FROM products WHERE ${where.join(' AND ')} ORDER BY score DESC, price ASC LIMIT ${limit}`, [fts, ...params]);
       mode = 'fulltext';
     } catch {
       rows = await byPrice(); // full-text index missing or not flushed yet: never fail the tick
