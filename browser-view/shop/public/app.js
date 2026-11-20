@@ -71,6 +71,7 @@ async function addToCart(id, qty = 1, quiet) {
     const c = await api('/api/cart', { method: 'POST', body: { productId: id, qty } });
     setCart(c);
     track(qty > 0 ? 'add_to_cart' : 'remove_from_cart', { productId: id, qty: Math.abs(qty) });
+    if (qty > 0) scVerdict(id, Date.now());
     const p = S.products.get(id);
     if (!quiet) toast(`<b>Added to cart</b><br>${esc(p.title)}<br><a href="#/cart">Go to cart</a>`, 'green');
     return true;
@@ -87,7 +88,7 @@ async function toggleWish(id) {
     await api('/api/wishlist?productId=' + encodeURIComponent(id), { method: 'DELETE' }); S.wish.delete(id); track('wishlist_remove', { productId: id });
     toast('Removed from wishlist');
   } else {
-    await api('/api/wishlist', { method: 'POST', body: { productId: id } }); S.wish.add(id); track('wishlist_add', { productId: id });
+    await api('/api/wishlist', { method: 'POST', body: { productId: id } }); S.wish.add(id); track('wishlist_add', { productId: id }); scVerdict(id, Date.now());
     toast(`<b>Added to wishlist</b><br>${esc(p.title)}`, 'green');
   }
   updateCounts();
@@ -286,7 +287,7 @@ ${c.items.length ? c.items.map((i) => { const p = i.product; return `<div class=
   const btn = $('#checkoutBtn');
   if (btn) btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Placing your order...';
-    try { const o = await api('/api/checkout', { method: 'POST', body: {} }); setCart({ items: [], total: 0 }); location.hash = '#/order/' + o.orderId; }
+    try { const t0 = Date.now(); const o = await api('/api/checkout', { method: 'POST', body: {} }); setCart({ items: [], total: 0 }); location.hash = '#/order/' + o.orderId; for (const i of o.items || []) scVerdict(i.productId, t0); }
     catch (e) { toast(esc(e.message), 'red'); btn.disabled = false; btn.textContent = 'Proceed to checkout'; }
   };
 }
@@ -394,3 +395,24 @@ function startStream() {
   try { await loadAll(); } catch (e) { app().innerHTML = '<div class="empty"><h2>Could not reach the store</h2></div>'; return; }
   buildNav(); startStream(); route();
 })();
+
+
+// ---------- SafeCart link (cc): the SafeCart agent watches this shop's events (cart, wishlist, purchases), runs a
+// recall check and acts (takes recalled items out of the cart, files refund claims). Show its verdict here and link
+// to its dashboard. ?agent= and ?dashboard= override the defaults.
+const SC_API = new URLSearchParams(location.search).get('agent') || 'http://localhost:8000';
+const SC_DASH = new URLSearchParams(location.search).get('dashboard') || 'http://localhost:5175/';
+document.getElementById('scLink')?.setAttribute('href', SC_DASH);
+async function scVerdict(productId, since) {
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 750));
+    let d; try { d = await (await fetch(SC_API + '/shop/activity')).json(); } catch { return; } // agent not running
+    const a = (d.items || []).find((x) => x.productId === productId && Date.parse(x.at) >= since - 3000 && x.action !== 'checking');
+    if (!a) continue;
+    const bad = a.verdict === 'recalled';
+    const head = bad ? 'SafeCart blocked a recalled product' : a.verdict === 'clear' ? 'SafeCart: no recalls found' : 'SafeCart could not verify this item';
+    toast(`<b>${head}</b><br>${esc(a.title)}<br>${esc(a.note)}<br><a href="${SC_DASH}" target="_blank" rel="noopener">Open SafeCart dashboard &#8599;</a>`, bad ? 'red' : a.verdict === 'clear' ? 'green' : '', bad ? 9000 : 6000);
+    if (bad) { try { setCart(await api('/api/cart')); S.wish.delete(productId); updateCounts(); if (/^#\/(cart|wishlist)/.test(location.hash)) route(); } catch { /* ignore */ } }
+    return;
+  }
+}
