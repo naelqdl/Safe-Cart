@@ -3,6 +3,7 @@
 // recalled if ANY source matches the exact model/UPC; unknown if EVERY source failed (never auto-buy on unknown).
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { REPO, seed, type Recall } from './data.ts';
 import { normModel, searchRecalls } from '../registries/cpsc.ts';
 import { backend, store } from './adapters/store.ts';
@@ -13,7 +14,7 @@ import type { SafetyCheck } from './wire.ts';
 
 let gate: any = null; // hz's senso-gate.ts recallFactCheck(brand, model), when merged
 const gatePath = join(REPO, 'server/integrations/senso-gate.ts');
-if (existsSync(gatePath)) gate = await import(gatePath).catch(() => null);
+if (existsSync(gatePath)) gate = await import(pathToFileURL(gatePath).href).catch(() => null);
 
 export interface Product { key: string; brand: string; model: string; upc?: string; title: string; category?: string }
 export interface SafetyResult { check: SafetyCheck; recall?: Recall }

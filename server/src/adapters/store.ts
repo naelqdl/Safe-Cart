@@ -2,6 +2,7 @@
 // otherwise the same functions run on the local seed (backend 'local'), and the trail says so.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { REPO, seed, type CatalogItem, type Recall } from '../data.ts';
 import { recallMentions } from '../../registries/cpsc.ts';
 import { state, type LedgerRow } from '../state.ts';
@@ -15,7 +16,7 @@ export async function initStore() {
   const mod = join(REPO, 'server/integrations/singlestore.ts');
   if (!process.env.S2_URL || !existsSync(mod)) return backend;
   try {
-    s2 = (await import(mod)) as S2;
+    s2 = (await import(pathToFileURL(mod).href)) as S2; // file:// URL: absolute Windows paths (c:\...) fail as bare specifiers
     if (s2.ping) await s2.ping();
     backend = 'singlestore'; backendNote = 'connected';
   } catch (e) { s2 = null; backend = 'local'; backendNote = `SingleStore error: ${(e as Error).message}`; }
