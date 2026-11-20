@@ -1,7 +1,20 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice, formatTime } from "@/lib/format";
-import type { Receipt } from "@/lib/agent/types";
+import type { Receipt, SafetyCheck } from "@/lib/agent/types";
+
+// Every receipt shows its safety check; no sources means the agent bought without one (NAIVE mode).
+function SafetyLine({ safety }: { safety?: SafetyCheck }) {
+  if (!safety || safety.sources.length === 0) {
+    return <p className="text-xs font-medium text-destructive">Bought in NAIVE mode: no safety check</p>;
+  }
+  const label = safety.status === "clear" ? "clear" : safety.status === "recalled" ? "RECALLED" : "unknown";
+  return (
+    <p className={safety.status === "clear" ? "text-xs text-muted-foreground" : "text-xs font-medium text-destructive"}>
+      Safety check: {label} · {safety.sources.map((s) => s.label).join(" + ")} · <time dateTime={safety.checkedAt}>{formatTime(safety.checkedAt)}</time>
+    </p>
+  );
+}
 
 export function ReceiptsPanel({ receipts }: { receipts: Receipt[] }) {
   return (
@@ -21,6 +34,7 @@ export function ReceiptsPanel({ receipts }: { receipts: Receipt[] }) {
                   <p className="text-xs text-muted-foreground tabular-nums">
                     <time dateTime={r.at}>{formatTime(r.at)}</time> · <span className="font-mono">{r.reference}</span>
                   </p>
+                  <SafetyLine safety={r.safety} />
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-medium tabular-nums">{formatPrice(r.amount, r.currency)}</p>

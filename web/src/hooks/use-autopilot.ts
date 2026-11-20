@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { appConfig } from "@/config/app.config";
 import { readNdjson } from "@/lib/agent/ndjson";
 import { applyEvent, initialDashboardState } from "@/lib/agent/reduce";
+import { track, trackAgentEvent } from "@/lib/analytics";
 import { demoRuns } from "@/lib/agent/trail-demo";
 import type { ActionResult, AgentEvent, AutopilotApi, DashboardState, TickRequest } from "@/lib/agent/types";
 
@@ -40,7 +41,10 @@ export function useAutopilot(): AutopilotApi {
     stateRef.current = state;
   }, [state]);
 
-  const apply = useCallback((e: AgentEvent) => setState((s) => applyEvent(s, e)), []);
+  const apply = useCallback((e: AgentEvent) => {
+    trackAgentEvent(e);
+    setState((s) => applyEvent(s, e));
+  }, []);
 
   const setEnabled = useCallback((on: boolean) => {
     localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
@@ -175,9 +179,11 @@ export function useAutopilot(): AutopilotApi {
             receipt: {
               reference: result.reference ?? "", missionId, candidateId: candidate.id, title,
               amount: candidate.price, currency: candidate.currency, saved, at: new Date().toISOString(), auto: false,
+              safety: result.safety,
             },
           });
           apply({ type: "mission", missionId, status: "done", note: "Approved and bought" });
+          track("approval_approved", { amount: candidate.price });
           setState((st) => ({ ...st, approvals: st.approvals.filter((a) => a.id !== approvalId) }));
         } catch {
           setApprovalState(approvalId, { status: "error", message: "Could not reach the action endpoint" });
@@ -193,6 +199,7 @@ export function useAutopilot(): AutopilotApi {
       if (!approval) return;
       const { candidate, missionId } = approval;
       setState((s) => ({ ...s, approvals: s.approvals.filter((a) => a.id !== approvalId) }));
+      track("approval_declined", { amount: candidate.price });
       apply({ type: "mission", missionId, status: "watching", note: "You declined — still watching" });
       apply({
         type: "step",
