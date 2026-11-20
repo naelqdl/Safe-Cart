@@ -5,6 +5,7 @@ import type { Profile, SafetyCheck } from "./types";
 export interface MockDemo {
   sale?: { sku: string; pct: number; ticked: boolean }; // ticked: the next tick already checked the sale item
   recall?: { recallId: string; handled: boolean };      // handled: the owned-items sweep already ran
+  guardOff?: boolean;                                   // naive agent: recall guard OFF
 }
 // globalThis so every route bundle in the same server process sees one demo state.
 const g = globalThis as { __safecartDemo?: MockDemo };
@@ -32,7 +33,7 @@ export const mockSafety = (status: SafetyCheck["status"] = "clear", recallId?: s
 export function mockProfile(): Profile {
   const demo = mockDemo();
   const salePct = demo.sale?.sku === STROLLER_SKU ? demo.sale.pct : 0;
-  const strollerPrice = Math.round(249 * (1 - salePct / 100) * 100) / 100;
+  const strollerPrice = Math.round(199 * (1 - salePct / 100) * 100) / 100;
   return {
     name: "Maya Chen",
     preferences: [
@@ -42,7 +43,7 @@ export function mockProfile(): Profile {
       { label: "Must fit a narrow car", source: "user" },
     ],
     wishlist: [
-      { id: "w1", sku: STROLLER_SKU, title: "AeroLite travel stroller", targetPrice: 180, price: strollerPrice, listPrice: 249, onSale: salePct > 0,
+      { id: "w1", sku: STROLLER_SKU, title: "AeroLite travel stroller", targetPrice: 180, price: strollerPrice, listPrice: 199, onSale: salePct > 0,
         safety: mockSafety("recalled", "MOCK-STROLLER") },
       { id: "w2", sku: "SKU-MONITOR", title: "Video baby monitor", targetPrice: 120, price: 149, listPrice: 149, onSale: false, safety: mockSafety() },
       { id: "w3", sku: "SKU-NOISE", title: "White-noise machine", targetPrice: 40, price: 59, listPrice: 59, onSale: false, safety: mockSafety() },
@@ -57,6 +58,6 @@ export function mockProfile(): Profile {
       { id: "o5", title: "Diaper pail", model: "DP-1", purchasedAt: "2026-07-09", merchant: "Sandbox Baby Store", safety: mockSafety() },
       { id: "o6", title: "Swaddle set (3)", model: "SW-3", purchasedAt: "2026-08-22", merchant: "Sandbox Baby Store", safety: mockSafety() },
     ],
-    policy: { autoBuyLimit: 150, minDiscountPct: 20, autonomy: "auto", recallGuard: true, source: "default" },
+    policy: { autoBuyLimit: 150, minDiscountPct: 20, autonomy: "auto", recallGuard: !demo.guardOff, source: "default" },
   };
 }

@@ -69,9 +69,14 @@ export async function* runMockTick(req: TickRequest): AsyncGenerator<AgentEvent>
   const { tick, missions, guardrails, spentToday } = req;
   const demo = mockDemo();
   if (demo.recall && !demo.recall.handled) {
-    demo.recall.handled = true;
-    yield* ownedRecallSweep(tick, demo.recall.recallId);
-    return;
+    if (demo.guardOff) {
+      await delay();
+      yield { type: "step", step: { id: `t${tick}-owned-naive`, at: now(), kind: "compare", status: "warn", title: "NAIVE mode: owned items are not checked against recalls" } };
+    } else {
+      demo.recall.handled = true;
+      yield* ownedRecallSweep(tick, demo.recall.recallId);
+      return;
+    }
   }
   if (missions.length === 0) {
     await delay();
@@ -217,12 +222,32 @@ async function* strollerRecallBranch(
   m: TickRequest["missions"][number], pct: number, steps: AuditStep[], step: StepFn, fmt: (n: number) => string, tick: number,
 ): AsyncGenerator<AgentEvent> {
   const r = MOCK_RECALLS["MOCK-STROLLER"];
-  const list = 249;
+  const list = 199;
   const price = round2(list * (1 - pct / 100));
   const cpsc = [{ label: "CPSC (mock)", url: r.url }];
   await delay();
   yield step("sale", { kind: "compare", status: "ok", title: `On sale −${pct}%: ${m.title} ${fmt(price)} (list ${fmt(list)})`, sources: [{ label: "Mock catalog" }] });
   await delay();
+  if (mockDemo().guardOff) {
+    await delay();
+    yield step("naive", { kind: "decide", status: "warn", title: "NAIVE mode: recall guard is OFF, skipping the safety check" });
+    const reference = "MOCK-" + Date.now().toString(36).toUpperCase();
+    await delay();
+    yield step("act", { kind: "act", status: "ok", title: `Bought ${m.title} for ${fmt(price)} — ${reference}`, sources: [{ label: "Mock checkout" }] });
+    yield { type: "run", run: mockRun(reference, m.title, m.maxPrice, price, steps) };
+    yield {
+      type: "receipt",
+      receipt: {
+        reference, missionId: m.id, candidateId: `c-${m.id}-${tick}`, title: "AeroLite travel stroller (NAIVE: recalled item bought)", amount: price, currency: m.currency,
+        saved: round2(list - price), at: now(), auto: true, safety: { status: "recalled", sources: [], checkedAt: now(), recallId: "MOCK-STROLLER" },
+      },
+    };
+    await delay();
+    yield { type: "mission", missionId: m.id, status: "done", note: "Bought in naive mode: recall guard was off" };
+    await delay();
+    yield { type: "done" };
+    return;
+  }
   yield step("safety", { kind: "compare", status: "fail", title: `Safety check: RECALLED — ${r.recallTitle}`, detail: r.hazard, sources: cpsc });
   const alert: RecallAlert = {
     id: `recall-MOCK-STROLLER-wishlist-${m.id}`, recallId: "MOCK-STROLLER", recallTitle: r.recallTitle, hazard: r.hazard, remedy: r.remedy, url: r.url,
@@ -230,7 +255,7 @@ async function* strollerRecallBranch(
   };
   yield { type: "recall", alert };
   const alt = "CityLite compact stroller";
-  const altPrice = 139;
+  const altPrice = 129;
   await delay();
   yield step("alt", {
     kind: "compare", status: "ok", title: `Skipped the recalled stroller. Second choice: ${alt} ${fmt(altPrice)}`,

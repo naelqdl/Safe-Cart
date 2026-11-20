@@ -1,0 +1,39 @@
+{
+  "schema": "firedrill.local-descriptor.v1",
+  "source_roots": [
+    {
+      "alias": "app",
+      "identity_sha256": "<root identity hash>"
+    }
+  ],
+  "services": [
+    {
+      "alias": "agent",
+      "root_alias": "app",
+      "role": "agent",
+      "depends_on": [],
+      "configuration": []
+    }
+  ],
+  "entry_service": "agent",
+  "driver": {
+    "profile": "http.v1",
+    "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "authentication": "anonymous",
+    "state_domains": [
+      "merchant"
+    ]
+  },
+  "state_domains": [
+    {
+      "alias": "merchant",
+      "service_alias": "agent",
+      "kind": "database",
+      "location": "local",
+      "reset": "approved-hook",
+      "concurrency": "serial",
+      "hook_sha256": "<sha256 of evals/oracle.mjs>"
+    }
+  ],
+  "dependencies": []
+}

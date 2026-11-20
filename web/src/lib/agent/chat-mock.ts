@@ -25,7 +25,7 @@ export function runMockChat({ message, context }: ChatRequest): ChatReply {
   if (/\b(pause|stop|turn off|disable)\b/.test(msg))
     return reply("Autopilot is off. I won't check or buy anything until you turn it back on.", [{ type: "set_autopilot", on: false }]);
   if (/\b(start|resume|turn on|enable|go)\b/.test(msg))
-    return reply("Autopilot is on. I'll check your missions every few seconds.", [{ type: "set_autopilot", on: true }]);
+    return reply("Autopilot is on. I'll check your wishlist every few seconds.", [{ type: "set_autopilot", on: true }]);
   if (/\b(approve|yes|buy it|go ahead)\b/.test(msg))
     return newest
       ? reply(`Buying ${newest.candidate.title} for ${fmt(newest.candidate.price)} now.`, [{ type: "approve", approvalId: newest.id }])
@@ -45,12 +45,12 @@ export function runMockChat({ message, context }: ChatRequest): ChatReply {
     const step = recentSteps.find((s) => s.kind === "decide" || s.kind === "act");
     if (!step) return reply("I haven't made a decision yet — turn on Autopilot or say “check now”.");
     const mission = missions.find((x) => x.id === step.missionId);
-    return reply(`${step.title}. ${step.detail ?? ""}${mission ? ` (Mission: ${mission.title}.)` : ""}`.replace(/\s+/g, " ").trim());
+    return reply(`${step.title}. ${step.detail ?? ""}${mission ? ` (Wishlist: ${mission.title}.)` : ""}`.replace(/\s+/g, " ").trim());
   }
   if (/\b(status|missions?|watching)\b/.test(msg)) {
     const names = (done: boolean) => missions.filter((x) => (x.status === "done") === done).map((x) => x.title);
     const [w, d] = [names(false), names(true)];
     return reply(`Autopilot is ${autopilot ? "on" : "off"}. Watching ${w.length}${w.length ? `: ${w.join(", ")}` : ""}.${d.length ? ` Done: ${d.join(", ")}.` : ""}`);
   }
-  return reply("I can watch items (“watch AirPods under $150”), pause or resume Autopilot, approve or decline a purchase, check now, or tell you what I bought and why.");
+  return reply("I can watch items (“watch a car seat under $120”), pause or resume Autopilot, approve or decline a purchase, check now, or tell you what I bought and why.");
 }

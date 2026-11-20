@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { appConfig } from "@/config/app.config";
 import type { Profile } from "@/lib/agent/types";
 import { formatPrice } from "@/lib/format";
 
-type DemoAction = "sale" | "recall" | "reset";
+type DemoAction = "sale" | "recall" | "guard" | "reset";
 
 // Stage controls: each button POSTs /api/demo/<action>, then runs a check so the effect shows at once.
 export function DemoBar({ profile, onApplied }: { profile: Profile | null; onApplied(): void }) {
@@ -43,6 +45,10 @@ export function DemoBar({ profile, onApplied }: { profile: Profile | null; onApp
       <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => send("reset", {})}>
         Reset demo
       </Button>
+      <div className="flex items-center gap-2">
+        <Switch id="recall-guard" size="sm" disabled={!!busy} checked={p?.recallGuard ?? true} onCheckedChange={(on) => send("guard", { on })} />
+        <Label htmlFor="recall-guard" className="text-xs">Recall guard</Label>
+      </div>
       {p && (
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">auto-buy ≤ {formatPrice(p.autoBuyLimit, appConfig.currency)}</Badge>

@@ -1,8 +1,8 @@
 import { mockDemo, resetMockDemo } from "@/lib/agent/profile-mock";
 
-// POST /api/demo/sale {sku, pct} | /api/demo/recall {recallId} | /api/demo/reset {}
+// POST /api/demo/sale {sku, pct} | /api/demo/recall {recallId} | /api/demo/guard {on} | /api/demo/reset {}
 // Forwards to AGENT_BACKEND_URL/demo/<action>, or flips the mock's demo state so the next tick shows the effect.
-const ACTIONS = ["sale", "recall", "reset"] as const;
+const ACTIONS = ["sale", "recall", "guard", "reset"] as const;
 type Action = (typeof ACTIONS)[number];
 const isText = (v: unknown): v is string => typeof v === "string" && v.trim() !== "";
 
@@ -13,6 +13,7 @@ function parseBody(action: Action, b: Record<string, unknown>): Record<string, u
     return { sku: b.sku, pct };
   }
   if (action === "recall") return isText(b.recallId) ? { recallId: b.recallId } : "Body must be { recallId: string }";
+  if (action === "guard") return typeof b.on === "boolean" ? { on: b.on } : "Body must be { on: boolean }";
   return {};
 }
 
@@ -33,6 +34,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ action:
   if (typeof body === "string") return Response.json({ error: body }, { status: 400 });
 
   const upstream = process.env.AGENT_BACKEND_URL;
+  if (upstream && action === "guard")
+    return Response.json({ error: "Recall guard is the Statsig gate recall_guard on the real backend; flip it in the Statsig console" }, { status: 409 });
   if (upstream) {
     try {
       const r = await fetch(`${upstream}/demo/${action}`, {
@@ -46,6 +49,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ action:
 
   const demo = mockDemo();
   if (action === "sale") demo.sale = { sku: body.sku as string, pct: body.pct as number, ticked: false };
+  else if (action === "guard") demo.guardOff = !body.on;
   else if (action === "recall") demo.recall = { recallId: body.recallId as string, handled: false };
   else resetMockDemo();
   return Response.json({ ok: true });
