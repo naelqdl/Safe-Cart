@@ -2,6 +2,7 @@
 // ../../integrations/statsig.ts (S-H2) when present; else user.json defaults. /demo/guard overrides locally.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { REPO, seed } from '../data.ts';
 import { state } from '../state.ts';
 
@@ -11,7 +12,7 @@ let statsig: any = null;
 export async function initPolicy() {
   const mod = join(REPO, 'server/integrations/statsig.ts');
   if (!existsSync(mod)) return 'default (statsig.ts not merged yet)';
-  try { statsig = await import(mod); return 'statsig'; } catch (e) { return `default (statsig import failed: ${(e as Error).message})`; }
+  try { statsig = await import(pathToFileURL(mod).href); return 'statsig'; } catch (e) { return `default (statsig import failed: ${(e as Error).message})`; }
 }
 
 export async function getPolicy(): Promise<Policy & { latencyMs: number }> {
