@@ -3,7 +3,9 @@
 (() => {
   const { S, esc, money } = window.SC;
   const $ = (id) => document.getElementById(id);
-  const head = (title, sub, right = '') => `<div class="pg-head"><div><h2>${title}</h2><p>${sub}</p></div>${right}</div>`;
+  const PIC = { Recalls: 'triangle-alert', Refunds: 'receipt-text', Memory: 'brain', Approvals: 'shield-check', Activity: 'activity', Runs: 'list-tree', Missions: 'crosshair' };
+  const head = (title, sub, right = '') => `<div class="pg-head"><div><span class="pg-ic">${ic(PIC[title] ?? 'gauge', 24)}</span><h2>${title}</h2><p>${sub}</p></div>${right}</div>`;
+  const sec = (icon, t, style = '') => `<div class="sec" style="${style}">${ic(icon, 15)}${t}</div>`;
   const empty = (t) => `<div class="pg-card"><p style="color:var(--muted)">${t}</p></div>`;
   const ago = (iso) => { const s = Math.round((Date.now() - Date.parse(iso)) / 1000); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
   const ACT = { purchase_skipped: ['Skipped the purchase', 'warn'], refund_claim_filed: ['Refund claim filed', 'steel'], replacement_bought: ['Safe replacement bought', 'ok'], needs_you: ['Needs Maya', 'bad'] };
@@ -17,7 +19,7 @@
         <div class="chips"><span class="badge bad">CPSC ${esc(a.recallId)}</span><span class="badge idle">${a.itemKind}</span><span class="badge ${ACT[a.action]?.[1] ?? 'idle'}">${ACT[a.action]?.[0] ?? a.action}</span><span class="meta">${ago(a.at)}</span></div>
         <h3>${esc(a.itemTitle)}</h3>
         <p><b>Hazard.</b> ${esc(a.hazard)}</p><p><b>Remedy.</b> ${esc(a.remedy)}</p>
-        <div class="chips">${a.claimRef ? `<span class="chip">Refund claim ${esc(a.claimRef)}</span>` : ''}${a.replacementTitle ? `<span class="chip">Replacement: ${esc(a.replacementTitle)}</span>` : ''}<a class="chip" href="${esc(a.url)}" target="_blank">CPSC notice ↗</a></div>
+        <div class="chips">${a.claimRef ? `<span class="chip">Refund claim ${esc(a.claimRef)}</span>` : ''}${a.replacementTitle ? `<span class="chip">Replacement: ${esc(a.replacementTitle)}</span>` : ''}<a class="chip" href="${esc(a.url)}" target="_blank">${ic('external-link', 14)}CPSC notice</a></div>
       </div>`).join('') : empty('No recalls affect Maya’s items yet. Press 2 to publish one.'));
   }
 
@@ -45,7 +47,7 @@
         const [label, cls] = rfStatus(c);
         const byClaude = c.letterModel && c.letterModel !== 'template';
         return `<li><button class="rf-row" data-rf="${esc(c.claimRef)}">
-          <span class="rf-main"><svg class="rf-ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <span class="rf-main">${ic('mail', 18, 'rf-ic')}
             <span class="rf-txt"><b>${esc(c.itemTitle)}</b><small>To ${esc(c.to ?? 'Demo Baby Store')} · CPSC recall ${esc(c.recallId ?? '?')} · ${when(c.at)}</small></span></span>
           <span class="rf-tags">${c.sample ? '<span class="tag">Sample</span>' : '<span class="tag live">Live</span>'}${byClaude ? '<span class="tag">Letter by Claude</span>' : ''}<span class="badge ${cls}">${label}</span></span>
         </button></li>`;
@@ -73,9 +75,9 @@
     const p = S.profile; if (!p) return;
     const safety = (s) => (!s ? '<span class="badge idle">Not checked</span>' : s.status === 'recalled' ? `<span class="badge bad">Recalled · CPSC ${esc(s.recallId)}</span>` : s.status === 'clear' ? '<span class="badge ok">Safe</span>' : '<span class="badge warn">Safety unknown</span>');
     $('pgMemory').innerHTML = head('Memory', 'What SafeCart knows about Maya. Preferences rank alternatives, and the inventory is what it protects.') +
-      `<div class="pg-card"><div class="meta">PREFERENCES</div><div class="chips">${p.preferences.map((x) => `<span class="chip ${x.source === 'memory' ? 'mem' : ''}">${esc(x.label)}${x.source === 'memory' ? ' · learned' : ''}</span>`).join('')}</div></div>
-       <div class="meta" style="margin-top:6px">WISHLIST</div><div class="pg-grid">${p.wishlist.map((w) => `<div class="pg-card"><h3>${esc(w.title)}</h3><div class="chips">${safety(w.safety)}${w.onSale ? `<span class="badge warn">On sale −${Math.round((1 - w.price / w.listPrice) * 100)}%</span>` : ''}</div><div class="meta">${money(w.price)} · target ${money(w.targetPrice)}</div></div>`).join('')}</div>
-       <div class="meta" style="margin-top:6px">OWNED</div><div class="pg-grid">${p.owned.map((o) => `<div class="pg-card ${o.safety?.status === 'recalled' ? 'bad' : ''}"><h3>${esc(o.title)}</h3>${safety(o.safety)}<div class="meta">Model ${esc(o.model)} · ${esc(o.merchant)} · ${esc(o.purchasedAt)}</div></div>`).join('')}</div>`;
+      `<div class="pg-card">${sec('sparkles', 'Preferences', 'margin:0')}<div class="chips">${p.preferences.map((x) => `<span class="chip ${x.source === 'memory' ? 'mem' : ''}">${esc(x.label)}${x.source === 'memory' ? ' · learned' : ''}</span>`).join('')}</div></div>
+       ${sec('heart', 'Wishlist')}<div class="pg-grid">${p.wishlist.map((w) => `<div class="pg-card"><h3>${esc(w.title)}</h3><div class="chips">${safety(w.safety)}${w.onSale ? `<span class="badge warn">On sale −${Math.round((1 - w.price / w.listPrice) * 100)}%</span>` : ''}</div><div class="meta">${money(w.price)} · target ${money(w.targetPrice)}</div></div>`).join('')}</div>
+       ${sec('package', 'Owned')}<div class="pg-grid">${p.owned.map((o) => `<div class="pg-card ${o.safety?.status === 'recalled' ? 'bad' : ''}"><h3>${esc(o.title)}</h3>${safety(o.safety)}<div class="meta">Model ${esc(o.model)} · ${esc(o.merchant)} · ${esc(o.purchasedAt)}</div></div>`).join('')}</div>`;
   }
 
   function approvals() {
