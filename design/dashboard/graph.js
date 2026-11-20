@@ -7,7 +7,7 @@
   const el = document.getElementById('graph');
   const lab = document.getElementById('glabels');
   const view = el.closest('.view');
-  const C = { user: '#ffffff', wish: '#9fb9da', owned: '#c8ced6', recall: '#ff6262', buy: '#4fd39c', claim: '#8db4e2', src: '#f2b552', inj: '#ff9f43' };
+  const C = { user: '#ffffff', wish: '#60a5fa', owned: '#c4b5fd', recall: '#f87171', buy: '#4ade80', claim: '#22d3ee', src: '#fbbf24', inj: '#fb923c' };
   const VAL = { user: 10, wish: 2.4, owned: 2.4, recall: 4.6, buy: 2.8, claim: 2.1, src: 3.6, inj: 2.2 };
   const REL = 5.2; // node radius = cbrt(val) * REL
   const SHELL = { user: 0, wish: 62, owned: 62, inj: 104, buy: 112, claim: 118, recall: 124, src: 190 };

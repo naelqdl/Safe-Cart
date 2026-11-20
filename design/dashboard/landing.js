@@ -136,16 +136,18 @@
       why = srcs.length ? srcs.map((x) => `<span class="tick">✓ ${esc(x)}</span>`).join('') : 'No safety check (naive mode)';
       btn = '<button class="btn ghost" data-run-last>Audit trail</button>';
     }
+    const icon = { ok: 'shield-check', handled: 'shield', bad: 'triangle-alert', warn: 'fingerprint', run: 'radio' }[k] ?? 'shield-check';
     $('hCard').className = `h-card ${k}`;
-    $('hCard').innerHTML = `<div class="h-item">${item}</div><div class="h-head">${head}</div><div class="h-why">${why}</div>${btn ? `<div class="h-act">${btn}</div>` : ''}`;
+    $('hCard').innerHTML = `<div class="h-ic">${ic(icon, 26)}</div><div class="h-body">${item ? `<div class="h-item">${item}</div>` : ''}<div class="h-head">${head}</div><div class="h-why">${why}</div>${btn ? `<div class="h-act">${btn}</div>` : ''}</div>`;
     // the tracker bar lives right under the card
     const fm = $('flowmap'); if (fm && fm.previousElementSibling !== $('hCard')) $('hCard').after(fm);
   }
   function summary() {
     const p = S.profile; if (!p) return;
     const owned = [...S.recalls.values()].filter((a) => a.itemKind === 'owned').length;
+    const caught = new Set([...S.recalls.values()].map((a) => a.recallId)).size;
     $('hBig').textContent = $('nProtected')?.textContent ?? '0';
-    $('hSub').innerHTML = `items protected · watching ${p.wishlist.length} · <span class="${owned ? 'bad' : 'ok'}">${owned ? `${owned} recall on things Maya owns` : 'no recalls on things Maya owns'}</span> · checked ${ago(lastCheck)}`;
+    $('hSub').innerHTML = `<span class="h-lbl">items protected</span><span class="pill blue">${ic('heart', 14)}${p.wishlist.length} watching</span><span class="pill ${caught ? 'red' : 'green'}">${ic('triangle-alert', 14)}${caught} recall${caught === 1 ? '' : 's'} caught</span><span class="pill green">${ic('credit-card', 14)}${money(S.spent)} spent</span><span class="pill cyan">${ic('receipt-text', 14)}${S.refunds?.claims?.length ?? 0} refunds</span><span class="h-ago">checked ${ago(lastCheck)}</span>`;
   }
   function rows() {
     const p = S.profile; if (!p) return;
@@ -155,7 +157,9 @@
       const b = bought.get(w.id); const rc = w.safety?.status === 'recalled';
       const st = b ? ['ok', `Bought · ${money(b.amount)}`] : rc ? ['bad', 'Recalled · won’t buy'] : w.price <= w.targetPrice ? ['ok', 'Target hit'] : w.onSale ? ['warn', `${money(w.price - w.targetPrice)} away`] : ['idle', 'Watching'];
       const max = Math.max(w.listPrice, w.price, w.targetPrice) * 1.04; const pc = (v) => (v / max * 100).toFixed(1);
-      return `<button class="h-row" data-go="missions"><span class="h-glyph">${esc(w.title.trim()[0])}</span><span class="h-rt"><b>${esc(w.title)}</b><small class="${st[0]}">${st[1]}</small><span class="pbar ${w.price <= w.targetPrice ? 'hit' : ''}"><i style="width:${pc(w.price)}%"></i><b style="left:${pc(w.targetPrice)}%"></b></span></span><span class="h-pr"><b>${money(w.price)}</b><small>target ${money(w.targetPrice)}</small></span></button>`;
+      const m = st[0] === 'ok' ? 'var(--ok)' : st[0] === 'bad' ? 'var(--bad)' : st[0] === 'warn' ? 'var(--warn)' : '#60a5fa';
+      const g = ['#60a5fa', '#c4b5fd', '#fbbf24', '#34d399', '#f472b6', '#22d3ee'][[...w.title].reduce((a, c) => a + c.charCodeAt(0), 0) % 6];
+      return `<button class="h-row" data-go="missions" style="--m:${m};--g:${g}"><span class="h-glyph">${esc(w.title.trim()[0])}</span><span class="h-rt"><b>${esc(w.title)}</b><small class="${st[0]}">${st[1]}</small><span class="pbar ${w.price <= w.targetPrice ? 'hit' : ''}"><i style="width:${pc(w.price)}%"></i><b style="left:${pc(w.targetPrice)}%"></b></span></span><span class="h-pr"><b>${money(w.price)}</b><small>target ${money(w.targetPrice)}</small></span></button>`;
     }).join('');
   }
   function say() {
@@ -164,7 +168,8 @@
     el.hidden = false;
     el.innerHTML = `<div class="h-say-h"><b>SafeCart</b><span>explained by Claude</span></div><p>${esc(r.decision.rationale)}</p><button class="h-link" data-ask="Why did you ${r.action ? 'buy' : 'decide on'} ${esc(r.decision.chosen ?? 'that')}?">Ask why ›</button>`;
   }
-  function render() { summary(); card(); rows(); say(); }
+  let grown = false;
+  function render() { summary(); card(); rows(); say(); if (!grown && $('hRows').children.length) { grown = true; $('hRows').classList.add('grow'); setTimeout(() => $('hRows').classList.remove('grow'), 1400); } }
   document.querySelector('.home2').addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) return SC.setPage(g.dataset.go);
     if (e.target.closest('[data-run-last]')) return SC.openRun(S.runs.length - 1);
