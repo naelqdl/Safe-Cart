@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadEnv } from '../_lib.ts';
 import { loadKb, REPO_DATA_DIR, type KbFile } from './kb.ts';
 import { key, putDoc, readManifest, sensoTitle, type SeedResult } from './seed.ts';
 
@@ -63,16 +64,20 @@ async function linkSingleStore(ids: { recallId: string; contentId: string }[]): 
   if (!process.env.S2_URL) return 'skipped (no S2_URL)';
   const mod = resolve(fileURLToPath(new URL('../singlestore.ts', import.meta.url)));
   if (!existsSync(mod)) return 'skipped (server/integrations/singlestore.ts not merged yet: ch S-H1)';
+  let s2: any;
   try {
-    const s2: any = await import('../singlestore.ts' as string);
+    s2 = await import('../singlestore.ts' as string);
     for (const { recallId, contentId } of ids) await s2.query('UPDATE recalls SET senso_content_id = ? WHERE recall_id = ?', [contentId, recallId]);
     return `updated ${ids.length} rows`;
   } catch (e) {
     return `failed: ${(e as Error).message}`;
+  } finally {
+    await s2?.close?.().catch(() => {}); // release the pool so the script exits
   }
 }
 
 export async function seedSenso(o: { dataDir?: string; dryRun?: boolean } = {}) {
+  loadEnv(); // S2_URL is checked directly below, even when every doc is unchanged
   const data = o.dataDir ?? REPO_DATA_DIR;
   const m = readManifest();
   const results: (SeedResult & { recallId?: string })[] = [];

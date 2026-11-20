@@ -6,7 +6,9 @@
 // Why "sold in our store": Senso's hackathon guide says claims about another company come back
 // not_verifiable, and ai_assistant mode only checks claims about our organization and its products.
 // Framing the item as our store's product keeps the claim checkable. Author 'organization' by default;
-// confirm with `npx tsx senso-gate.smoke.ts` once recalls are seeded; override with SENSO_GATE_AUTHOR.
+// override with SENSO_GATE_AUTHOR. Verified live (senso-gate.smoke.ts, real recalls seeded): Besrey
+// BR-C708S (CPSC 10014) → conflict and Nuvo NV-S100 → unsupported in BOTH author modes.
+// Latency 8-20 s per check: run it in parallel with the other safety sources, never serially.
 import { loadEnv } from './_lib.ts';
 import { factCheck, type Claim, type Passage, type Verdict } from './senso.ts';
 
