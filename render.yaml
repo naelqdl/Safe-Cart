@@ -1,0 +1,43 @@
+# Render Blueprint for the hosted SafeCart demo (free plan). Dashboard is on Vercel: https://safecart-dashboard.vercel.app
+# Secrets are NOT in this file: Render asks for them when you apply the Blueprint (sync: false).
+services:
+  - type: web
+    name: safecart-demo-agent
+    runtime: node
+    plan: free
+    branch: cc/safecart
+    buildCommand: cd server/integrations && npm install && cd .. && npm install
+    startCommand: cd server && npx tsx src/index.ts
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SHOP_URL
+        value: https://safecart-demo-shop.onrender.com
+      - key: MERCHANT_URL
+        value: https://safecart-demo-store.onrender.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+  - type: web
+    name: safecart-demo-shop
+    runtime: node
+    plan: free
+    branch: cc/safecart
+    buildCommand: echo "no build"
+    startCommand: node browser-view/shop/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+  - type: web
+    name: safecart-demo-store
+    runtime: node
+    plan: free
+    branch: cc/safecart
+    buildCommand: echo "no build"
+    startCommand: node merchant/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
